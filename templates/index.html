@@ -11,56 +11,44 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 
     <style>
+        /* ORIGINAL PREMIUM THEME */
         :root { 
-            /* Cyberpunk Neon Theme */
             --bg-home: #09090e; --bg-quiz: #050508; 
             --primary: #00e5ff; --primary-glow: rgba(0, 229, 255, 0.4);
-            --secondary: #6366f1; --danger: #ef4444; --text: #f0fdf4;
-            --border: 1px solid rgba(0, 229, 255, 0.25);
-            --plyr-color-main: #00e5ff;
+            --secondary: #6366f1; --text: #f0fdf4; --plyr-color-main: #00e5ff;
         }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; margin:0; padding:0;}
         body { background: var(--bg-home); color: var(--text); font-family: 'Poppins', sans-serif; height: 100vh; overflow: hidden; position: relative;}
 
-        /* --- DOOR TRANSITION (Original) --- */
+        /* DOOR TRANSITION */
         .door-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; pointer-events: none; }
         .door-panel { position: absolute; top: 0; width: 100%; height: 100%; background: #000; transition: transform 0.6s cubic-bezier(0.8, 0, 0.2, 1); }
         .door-left { left: 0; transform: translateX(-100%); clip-path: polygon(0 0, 60% 0, 40% 30%, 70% 40%, 30% 60%, 60% 70%, 40% 100%, 0 100%); border-right: 2px solid var(--primary); }
         .door-right { right: 0; transform: translateX(100%); clip-path: polygon(100% 0, 60% 0, 40% 30%, 70% 40%, 30% 60%, 60% 70%, 40% 100%, 100% 100%); border-left: 2px solid var(--primary); }
         .door-closed .door-left, .door-closed .door-right { transform: translateX(0); }
         .door-closed { pointer-events: all; }
-        .door-closed::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 100%; background: var(--primary); box-shadow: 0 0 40px var(--primary); opacity: 1; animation: crackFlash 0.5s infinite alternate; z-index: 10000; }
+        .door-closed::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 100%; background: var(--primary); box-shadow: 0 0 40px var(--primary); animation: crackFlash 0.5s infinite alternate; z-index: 10000; }
         @keyframes crackFlash { from { opacity: 0.4; height: 0%; } to { opacity: 1; height: 100%; } }
 
         .screen { display: none; flex-direction: column; height: 100%; padding: 20px; padding-bottom: 90px; overflow-y: auto; z-index: 5; position: relative; }
 
-        /* --- WATER CARD & EFFECTS WAPAS AAGAYE! --- */
-        .water-card {
-            width: 100%; height: 160px; position: relative; overflow: hidden;
-            background: #0a0a12; border: 1px solid rgba(0, 229, 255, 0.4); 
-            border-radius: 24px; display: flex; align-items: center; padding: 20px; margin-bottom: 25px;
-            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8), 0 5px 20px rgba(0,0,0,0.5);
-        }
-        #water-fill {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; 
-            background: linear-gradient(180deg, var(--primary) 0%, #0c4a6e 100%);
-            z-index: 1; opacity: 0.5; animation: wave 4s ease-in-out infinite alternate;
-        }
+        /* WATER CARD & EFFECTS */
+        .water-card { width: 100%; height: 160px; position: relative; overflow: hidden; background: #0a0a12; border: 1px solid rgba(0, 229, 255, 0.4); border-radius: 24px; display: flex; align-items: center; padding: 20px; margin-bottom: 25px; box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8), 0 5px 20px rgba(0,0,0,0.5); }
+        #water-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; background: linear-gradient(180deg, var(--primary) 0%, #0c4a6e 100%); z-index: 1; opacity: 0.5; animation: wave 4s ease-in-out infinite alternate; }
         @keyframes wave { 0% { transform: scaleY(0.9); } 100% { transform: scaleY(1.1); } }
         .water-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%); z-index: 5; pointer-events: none; }
         .id-pic { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; margin-right: 15px; background: #000; z-index: 2; box-shadow: 0 0 15px var(--primary-glow); }
 
-        /* --- CLASS BUTTON SPIN GLOW --- */
         .class-btn { width: 100%; padding: 30px; background: linear-gradient(160deg, #0f101f, #05050a); border: 1px solid var(--primary); border-radius: 24px; text-align: center; box-shadow: 0 0 25px rgba(0, 229, 255, 0.1); cursor: pointer; position: relative; overflow: hidden; transition: 0.3s; margin-top: 10px; }
         .class-btn:active { transform: scale(0.97); }
         .class-btn::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(0, 229, 255, 0.15), transparent 60%); animation: spin 8s linear infinite; pointer-events: none; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .class-text { font-family: 'Orbitron'; font-size: 2rem; font-weight: 900; color: var(--primary); letter-spacing: 2px; text-shadow: 0 0 10px var(--primary-glow); position: relative; z-index: 2; }
 
-        /* --- OTHERS --- */
         .glass-box { background: rgba(255,255,255,0.03); border: var(--border); border-radius: 16px; padding: 18px; margin-bottom: 15px; cursor: pointer; display: flex; align-items: center;}
         .lecture-item { display: flex; align-items: center; justify-content: space-between; background: #0c0c14; padding: 18px; border-radius: 14px; margin-bottom: 12px; border: 1px solid #1f1f2e;}
         
+        /* DOCK */
         .dock-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 250px; height: 70px; background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 40px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); z-index: 100; }
         .dock-item { font-size: 1.6rem; color: #444; transition: 0.3s; width: 55px; height: 55px; display: flex; justify-content: center; align-items: center; border-radius: 50%; }
         .active-dock { color: var(--primary); transform: translateY(-10px); text-shadow: 0 0 20px var(--primary-glow); background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.1); }
@@ -68,7 +56,7 @@
         #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: rgba(99, 102, 241, 0.95); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 0.9rem; transition: 0.4s; z-index: 99999; box-shadow: 0 5px 20px rgba(0,0,0,0.5); white-space: nowrap;}
         .show-toast { bottom: 100px !important; }
 
-        /* --- VIDEO PLAYER FIXES --- */
+        /* VIDEO PLAYER */
         #video-container { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--secondary); background: #000; margin-bottom: 20px; position: relative;}
         .action-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; font-weight: bold; font-family: 'Poppins'; display: flex; justify-content: center; align-items: center; cursor: pointer;}
         .btn-offline { background: rgba(0, 229, 255, 0.1); border: 1px solid var(--primary); color: var(--primary); }
@@ -88,7 +76,6 @@
         @keyframes fadeRipple { 0% { opacity: 1; transform:scale(0.9);} 100% { opacity: 0; transform:scale(1.1);} }
         .ripple-left { left: 0; border-top-right-radius: 50%; border-bottom-right-radius: 50%; }
         .ripple-right { right: 0; border-top-left-radius: 50%; border-bottom-left-radius: 50%; }
-
     </style>
 </head>
 <body>
@@ -103,7 +90,6 @@
     <div id="home-screen" class="screen" style="display:flex;">
         <h2 style="text-align:center; font-family:'Orbitron'; color:var(--primary); letter-spacing:2px; text-shadow:0 0 20px var(--primary-glow);">LEARNING HUB</h2>
         
-        <!-- ORIGINAL WATER CARD WAPAS -->
         <div class="water-card">
             <div id="water-fill"></div>
             <img id="u-pic" class="id-pic" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
@@ -113,7 +99,6 @@
                     <span style="color:#fff; font-size: 0.8rem; font-weight:bold; font-family:'Orbitron';">ACTIVE</span>
                 </div>
                 <div id="u-name" style="font-size:1.4rem; font-weight:700; margin:4px 0; color:white;">Loading...</div>
-                <!-- XP BAR WAPAS -->
                 <div style="width:100%; height:8px; background:rgba(0,0,0,0.5); border-radius:10px; overflow:hidden; border:1px solid rgba(0, 229, 255, 0.3); margin-top:8px;">
                     <div style="width:100%; height:100%; background:linear-gradient(90deg, #00e5ff, #6366f1);"></div>
                 </div>
@@ -143,7 +128,6 @@
         </div>
         
         <div style="padding: 15px; flex:1; overflow-y:auto;">
-            <!-- VIDEO CONTAINER W/ DOUBLE TAP -->
             <div id="video-container">
                 <video id="player" playsinline controls></video>
                 <div id="ripple-left" class="skip-ripple ripple-left">⏪ 10s</div>
@@ -162,7 +146,6 @@
         <div class="glass-box" onclick="tg.openTelegramLink('https://t.me/errorkid_05')"><span style="font-size:1.4rem; margin-right:15px;">📢</span> <b>Join Official Channel</b></div>
     </div>
 
-    <!-- DOCK BAR -->
     <div class="dock-container" id="main-dock">
         <div class="dock-item active-dock" onclick="switchTab('home', this)">🏠</div>
         <div class="dock-item" onclick="switchTab('profile', this)">👤</div>
@@ -177,25 +160,34 @@
         
         let fullData = {}; let path = []; let player; let currentVid = null;
 
-        // INIT PLYR - DOUBLE TAP BUG FIXED HERE
         document.addEventListener('DOMContentLoaded', () => {
             player = new Plyr('#player', {
                 controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen'],
                 settings: ['speed'], speed: { selected: 1, options: [0.5, 1, 1.25, 1.5, 2] },
-                doubleClick: { toggle: false } // 🔴 Yahi thhi asli bimari! Ise false kiya taaki double tap pe screen na ghume!
+                doubleClick: { toggle: false } // PLYR DEFAULT DOUBLE CLICK BAND KAR DIYA
             });
 
-            // 1️⃣ DOUBLE TAP TO SKIP LOGIC (Perfected)
-            let lastTap = 0;
             const vidWrapper = document.querySelector('.plyr__video-wrapper');
+            
+            // 🛑 BROWSER KA DEFAULT DOUBLE CLICK BHI BAND KAR DIYA TAki FULLSCREEN NA HO
+            vidWrapper.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            // 1️⃣ DOUBLE TAP 10s SKIP (HEAVY SECURITY KE SATH)
+            let lastTap = 0;
+            // passive: false is compulsory on mobile to stop double tap from bypassing us
             vidWrapper.addEventListener('touchstart', function (e) {
-                if(e.target.closest('.plyr__controls')) return; // controls dabane par skip na ho
+                if(e.target.closest('.plyr__controls') || e.target.closest('.plyr__control')) return; 
                 
                 let currentTime = new Date().getTime();
                 let tapLength = currentTime - lastTap;
                 
                 if (tapLength < 300 && tapLength > 0) {
-                    e.preventDefault(); 
+                    e.preventDefault(); // Browser ko roko
+                    e.stopPropagation(); // Plyr ko roko
+                    
                     let rect = this.getBoundingClientRect();
                     let touchX = e.touches[0].clientX - rect.left;
                     
@@ -212,11 +204,13 @@
                         setTimeout(()=>r.style.display='none', 500);
                         tg.HapticFeedback.impactOccurred('light');
                     }
+                    lastTap = 0; // triple tap bug block karne ke liye reset
+                    return false;
                 }
                 lastTap = currentTime;
-            });
+            }, {passive: false}); 
 
-            // 2️⃣ TELEGRAM SCREEN ROTATION HACK (Sirf Fullscreen button pe chalega)
+            // 2️⃣ TELEGRAM SCREEN ROTATION HACK (Sirf [ ] dabane par hi chalega ab)
             player.on('enterfullscreen', () => {
                 let vc = document.getElementById('video-container');
                 vc.classList.add('tg-landscape');
@@ -228,16 +222,13 @@
             });
         });
 
-        fetch('/api/get_data').then(r=>r.json()).then(data=>{
-            fullData = data; 
-        });
+        fetch('/api/get_data').then(r=>r.json()).then(data=>{ fullData = data; });
 
         function showToast(msg) {
             let t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show-toast');
             setTimeout(() => { t.classList.remove('show-toast'); }, 3000);
         }
 
-        // DOOR TRANSITION
         function doorTransition(p, action) {
             let door = document.getElementById('door-overlay'); door.classList.add('door-closed');
             setTimeout(() => {
