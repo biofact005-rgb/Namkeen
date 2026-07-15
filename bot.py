@@ -38,10 +38,23 @@ db_data = load_db()
 # ==========================================
 # 📝 VIDEO TXT PARSER (For Admin Upload)
 # ==========================================
+
+# ==========================================
+# 📝 VIDEO TXT PARSER (For Admin Upload)
+# ==========================================
 def parse_video_txt(content):
     lines = content.splitlines()
     meta = {"path": [], "mode": "video"} 
     videos = []
+    
+    # 🧹 NAYA MAGIC: Link Saaf Karne Wala Function
+    def clean_link(url):
+        if url == "#": return url
+        # Galtiyan auto-fix karo
+        url = url.replace("http://https://", "https://")
+        url = url.replace("https://https://", "https://")
+        url = url.replace(":10000", "")
+        return url.strip()
     
     for line in lines[:5]:
         lower = line.lower()
@@ -53,15 +66,16 @@ def parse_video_txt(content):
     for line in lines:
         if "|" in line and not line.upper().startswith("PATH:"):
             parts = [p.strip() for p in line.split("|")]
-            # Format: Lecture Title | Video Link | PDF Link (Optional)
+            # Format: Lecture Title | Video Link | PDF Link
             if len(parts) >= 2:
                 vid_title = parts[0]
-                vid_url = parts[1]
-                pdf_url = parts[2] if len(parts) > 2 else "#"
+                # Yahan link clean hokar save hoga
+                vid_url = clean_link(parts[1])
+                pdf_url = clean_link(parts[2]) if len(parts) > 2 else "#"
+                
                 videos.append({"title": vid_title, "url": vid_url, "pdf": pdf_url})
                 
     return meta, videos
-
 # ==========================================
 # 🤖 BOT HANDLERS 
 # ==========================================
