@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>Namkeen Batch - Testing</title>
-    <!-- Telegram API (Mocking for external browser testing) -->
+    <title>Namkeen Batch</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     
@@ -19,8 +18,9 @@
             --secondary: #6366f1; --text: #f0fdf4; --plyr-color-main: #00e5ff;
         }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; margin:0; padding:0;}
-        body { background: var(--bg-home); color: var(--text); font-family: 'Poppins', sans-serif; height: 100vh; overflow: hidden; position: relative; touch-action: manipulation;}
+        body { background: var(--bg-home); color: var(--text); font-family: 'Poppins', sans-serif; height: 100vh; overflow: hidden; position: relative;}
 
+        /* DOOR TRANSITION */
         .door-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; pointer-events: none; }
         .door-panel { position: absolute; top: 0; width: 100%; height: 100%; background: #000; transition: transform 0.6s cubic-bezier(0.8, 0, 0.2, 1); }
         .door-left { left: 0; transform: translateX(-100%); clip-path: polygon(0 0, 60% 0, 40% 30%, 70% 40%, 30% 60%, 60% 70%, 40% 100%, 0 100%); border-right: 2px solid var(--primary); }
@@ -32,6 +32,7 @@
 
         .screen { display: none; flex-direction: column; height: 100%; padding: 20px; padding-bottom: 90px; overflow-y: auto; z-index: 5; position: relative; }
 
+        /* WATER CARD & EFFECTS */
         .water-card { width: 100%; height: 160px; position: relative; overflow: hidden; background: #0a0a12; border: 1px solid rgba(0, 229, 255, 0.4); border-radius: 24px; display: flex; align-items: center; padding: 20px; margin-bottom: 25px; box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8), 0 5px 20px rgba(0,0,0,0.5); }
         #water-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; background: linear-gradient(180deg, var(--primary) 0%, #0c4a6e 100%); z-index: 1; opacity: 0.5; animation: wave 4s ease-in-out infinite alternate; }
         @keyframes wave { 0% { transform: scaleY(0.9); } 100% { transform: scaleY(1.1); } }
@@ -47,6 +48,7 @@
         .glass-box { background: rgba(255,255,255,0.03); border: var(--border); border-radius: 16px; padding: 18px; margin-bottom: 15px; cursor: pointer; display: flex; align-items: center;}
         .lecture-item { display: flex; align-items: center; justify-content: space-between; background: #0c0c14; padding: 18px; border-radius: 14px; margin-bottom: 12px; border: 1px solid #1f1f2e;}
         
+        /* DOCK */
         .dock-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 250px; height: 70px; background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 40px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); z-index: 100; }
         .dock-item { font-size: 1.6rem; color: #444; transition: 0.3s; width: 55px; height: 55px; display: flex; justify-content: center; align-items: center; border-radius: 50%; }
         .active-dock { color: var(--primary); transform: translateY(-10px); text-shadow: 0 0 20px var(--primary-glow); background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.1); }
@@ -54,6 +56,7 @@
         #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: rgba(99, 102, 241, 0.95); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 0.9rem; transition: 0.4s; z-index: 99999; box-shadow: 0 5px 20px rgba(0,0,0,0.5); white-space: nowrap;}
         .show-toast { bottom: 100px !important; }
 
+        /* VIDEO PLAYER */
         #video-container { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--secondary); background: #000; margin-bottom: 20px; position: relative;}
         .action-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; font-weight: bold; font-family: 'Poppins'; display: flex; justify-content: center; align-items: center; cursor: pointer;}
         .btn-offline { background: rgba(0, 229, 255, 0.1); border: 1px solid var(--primary); color: var(--primary); }
@@ -140,7 +143,7 @@
     <!-- PROFILE SCREEN -->
     <div id="profile-screen" class="screen">
         <h2 style="text-align:center; font-family:'Orbitron'; color:var(--primary);">PROFILE</h2>
-        <div class="glass-box" onclick="alert('Join Official Channel Clicked!')"><span style="font-size:1.4rem; margin-right:15px;">📢</span> <b>Join Official Channel</b></div>
+        <div class="glass-box" onclick="tg.openTelegramLink('https://t.me/errorkid_05')"><span style="font-size:1.4rem; margin-right:15px;">📢</span> <b>Join Official Channel</b></div>
     </div>
 
     <div class="dock-container" id="main-dock">
@@ -149,101 +152,77 @@
     </div>
 
     <script>
-        // MOCK USER FOR LOCAL TESTING
-        let tg = window.Telegram ? window.Telegram.WebApp : null;
-        if(tg) { tg.expand(); tg.setHeaderColor('#09090e'); }
-        const user = {id: 8718760365, first_name: "Tester Bhai"};
-        
+        const tg = window.Telegram.WebApp;
+        tg.expand(); tg.setHeaderColor('#09090e');
+        const user = tg.initDataUnsafe.user || {id: 8718760365, first_name: "Student"};
         if(document.getElementById('u-name')) document.getElementById('u-name').innerText = user.first_name;
+        if(user.photo_url && document.getElementById('u-pic')) document.getElementById('u-pic').src = user.photo_url;
         
-        // 🛑 DUMMY DATA FOR LOCAL TESTING
-        let fullData = {
-            "Namkeen Batch": {
-                "Physics by MR Sir": {
-                    "Basic Maths": {
-                        "mode": "video",
-                        "data": [
-                            {
-                                "title": "L1: DUMMY VIDEO 1 (Bunny)",
-                                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                                "pdf": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-                                "dpp": "#"
-                            },
-                            {
-                                "title": "L2: DUMMY VIDEO 2 (Elephant)",
-                                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-                                "pdf": "#",
-                                "dpp": "#"
-                            }
-                        ]
-                    }
-                }
-            }
-        }; 
-
-        let path = []; let player; let currentVid = null;
+        let fullData = {}; let path = []; let player; let currentVid = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             player = new Plyr('#player', {
                 controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen'],
                 settings: ['speed'], speed: { selected: 1, options: [0.5, 1, 1.25, 1.5, 2] },
-                doubleClick: { toggle: false } // DOUBLE CLICK FULLSCREEN BLOCK
+                doubleClick: { toggle: false } // PLYR DEFAULT DOUBLE CLICK BAND KAR DIYA
             });
 
             const vidWrapper = document.querySelector('.plyr__video-wrapper');
-            const videoContainer = document.getElementById('video-container');
             
-            // BLOCK NATIVE DOUBLE CLICK
+            // 🛑 BROWSER KA DEFAULT DOUBLE CLICK BHI BAND KAR DIYA TAki FULLSCREEN NA HO
             vidWrapper.addEventListener('dblclick', function(e) {
-                e.preventDefault(); e.stopPropagation();
-            }, true);
+                e.preventDefault();
+                e.stopPropagation();
+            });
 
-            // DOUBLE TAP SKIP LOGIC
+            // 1️⃣ DOUBLE TAP 10s SKIP (HEAVY SECURITY KE SATH)
             let lastTap = 0;
+            // passive: false is compulsory on mobile to stop double tap from bypassing us
             vidWrapper.addEventListener('touchstart', function (e) {
                 if(e.target.closest('.plyr__controls') || e.target.closest('.plyr__control')) return; 
                 
-                let now = new Date().getTime();
-                if (now - lastTap < 300 && now - lastTap > 0) {
-                    e.preventDefault(); e.stopPropagation();
+                let currentTime = new Date().getTime();
+                let tapLength = currentTime - lastTap;
+                
+                if (tapLength < 300 && tapLength > 0) {
+                    e.preventDefault(); // Browser ko roko
+                    e.stopPropagation(); // Plyr ko roko
                     
-                    let touchX = e.touches[0].clientX;
-                    let touchY = e.touches[0].clientY;
-                    let isRightSide = false;
-
-                    // HORIZONTAL CHECK
-                    if (videoContainer.classList.contains('tg-landscape')) {
-                        // Phone is rotated via CSS, Y-axis represents physical Right/Left
-                        if (touchY > window.innerHeight / 2) isRightSide = true;
-                    } else {
-                        // Vertical mode
-                        if (touchX > window.innerWidth / 2) isRightSide = true;
-                    }
+                    let rect = this.getBoundingClientRect();
+                    let touchX = e.touches[0].clientX - rect.left;
                     
-                    if (isRightSide) {
+                    if (touchX > rect.width / 2) {
                         player.forward(10);
                         let r = document.getElementById('ripple-right'); 
                         r.style.display='flex'; r.style.animation = 'none'; r.offsetHeight; r.style.animation = null;
                         setTimeout(()=>r.style.display='none', 500);
+                        tg.HapticFeedback.impactOccurred('light');
                     } else {
                         player.rewind(10);
                         let r = document.getElementById('ripple-left'); 
                         r.style.display='flex'; r.style.animation = 'none'; r.offsetHeight; r.style.animation = null;
                         setTimeout(()=>r.style.display='none', 500);
+                        tg.HapticFeedback.impactOccurred('light');
                     }
-                    lastTap = 0; return false;
+                    lastTap = 0; // triple tap bug block karne ke liye reset
+                    return false;
                 }
-                lastTap = now;
-            }, {passive: false});
+                lastTap = currentTime;
+            }, {passive: false}); 
 
-            // SCREEN ROTATION HACK
+            // 2️⃣ TELEGRAM SCREEN ROTATION HACK (Sirf [ ] dabane par hi chalega ab)
             player.on('enterfullscreen', () => {
-                videoContainer.classList.add('tg-landscape');
+                let vc = document.getElementById('video-container');
+                vc.classList.add('tg-landscape');
+                tg.HapticFeedback.impactOccurred('medium');
             });
             player.on('exitfullscreen', () => {
-                videoContainer.classList.remove('tg-landscape');
+                let vc = document.getElementById('video-container');
+                vc.classList.remove('tg-landscape');
             });
         });
+
+        fetch('/api/get_data').then(r=>r.json()).then(data=>{ fullData = data; });
 
         function showToast(msg) {
             let t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show-toast');
@@ -299,10 +278,12 @@
             }
         }
 
-        // MOCKED DELETE API
         function deleteItem(target) {
             if(!confirm(`Delete "${target}" permanently?`)) return;
-            showToast("✅ MOCK: Deleted " + target);
+            fetch('/api/admin/delete', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({uid: user.id, path: path, target: target}) })
+            .then(r => r.json()).then(d => { 
+                if(d.status) { showToast("✅ Deleted!"); fetch('/api/get_data').then(res=>res.json()).then(data=>{ fullData=data; renderFolder(); }); } 
+            });
         }
 
         function playVideo(vidInfo) {
@@ -317,12 +298,14 @@
             player.play();
         }
 
-        // MOCKED CHAT SEND API
         function sendToChat(type) {
+            let urlToSend = type === 'video' ? currentVid.url : (type === 'pdf' ? currentVid.pdf : currentVid.dpp);
             showToast("⏳ Sending to Bot Chat...");
-            setTimeout(() => {
-                showToast("✅ MOCK: Sent successfully! Check Bot Chat.");
-            }, 1000);
+            fetch('/api/send_to_chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ uid: user.id, url: urlToSend, title: currentVid.title, type: type }) })
+            .then(r=>r.json()).then(d=>{
+                if(d.status) { showToast("✅ Sent successfully! Check Bot Chat."); tg.HapticFeedback.notificationOccurred('success'); }
+                else { showToast("❌ Failed to send!"); }
+            });
         }
 
         function closeVideo() { player.pause(); document.querySelectorAll('.screen').forEach(s => s.style.display='none'); document.getElementById('folder-screen').style.display='flex'; }
