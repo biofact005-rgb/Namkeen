@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>Namkeen Batch</title>
+    <title>Namkeen Batch - Testing</title>
+    <!-- Telegram API (Mocking for external browser testing) -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     
@@ -18,7 +19,7 @@
             --secondary: #6366f1; --text: #f0fdf4; --plyr-color-main: #00e5ff;
         }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; margin:0; padding:0;}
-        body { background: var(--bg-home); color: var(--text); font-family: 'Poppins', sans-serif; height: 100vh; overflow: hidden; position: relative;}
+        body { background: var(--bg-home); color: var(--text); font-family: 'Poppins', sans-serif; height: 100vh; overflow: hidden; position: relative; touch-action: manipulation;}
 
         .door-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; pointer-events: none; }
         .door-panel { position: absolute; top: 0; width: 100%; height: 100%; background: #000; transition: transform 0.6s cubic-bezier(0.8, 0, 0.2, 1); }
@@ -58,6 +59,7 @@
         .btn-offline { background: rgba(0, 229, 255, 0.1); border: 1px solid var(--primary); color: var(--primary); }
         .btn-doc { background: rgba(99, 102, 241, 0.1); border: 1px solid var(--secondary); color: white; }
 
+        /* TELEGRAM CSS ROTATION HACK FOR FULLSCREEN ONLY */
         .tg-landscape {
             position: fixed !important; top: 0 !important; left: 0 !important;
             width: 100vh !important; height: 100vw !important;
@@ -66,11 +68,7 @@
             border-radius: 0 !important; border: none !important;
         }
 
-        /* YOUTUBE STYLE INVISIBLE HITBOXES (Bulletproof) */
-        .skip-zone { position: absolute; top: 0; width: 40%; height: 75%; z-index: 40; }
-        .skip-left { left: 0; }
-        .skip-right { right: 0; }
-
+        /* DOUBLE TAP RIPPLE EFFECT */
         .skip-ripple { position: absolute; top: 0; width: 50%; height: 100%; background: rgba(255,255,255,0.15); display: none; align-items: center; justify-content: center; font-size: 2.5rem; color: white; font-weight: bold; z-index: 50; pointer-events: none; animation: fadeRipple 0.5s linear forwards; }
         @keyframes fadeRipple { 0% { opacity: 1; transform:scale(0.9);} 100% { opacity: 0; transform:scale(1.1);} }
         .ripple-left { left: 0; border-top-right-radius: 50%; border-bottom-right-radius: 50%; }
@@ -112,12 +110,14 @@
         </div>
     </div>
 
+    <!-- FOLDER SCREEN -->
     <div id="folder-screen" class="screen">
         <h3 id="folder-title" style="text-align:center; font-family:'Orbitron'; color:var(--primary);">LIBRARY</h3>
         <div id="folder-list" style="flex:1; overflow-y:auto; margin-bottom: 20px;"></div>
         <button onclick="doorTransition(null, 'back')" style="width:100%; padding:15px; background:transparent; border:1px solid #444; border-radius:14px; color:#aaa; font-weight:600;">⬅️ GO BACK</button>
     </div>
 
+    <!-- VIDEO SCREEN -->
     <div id="video-screen" class="screen" style="padding: 0; background: #050508;">
         <div style="padding: 15px; display: flex; align-items: center; background: #09090e; border-bottom: 1px solid #1f1f2e; z-index:10;">
             <span onclick="closeVideo()" style="font-size: 1.4rem; color: var(--primary); cursor: pointer; margin-right: 15px; padding: 5px;">⬅️</span>
@@ -127,11 +127,6 @@
         <div style="padding: 15px; flex:1; overflow-y:auto;">
             <div id="video-container">
                 <video id="player" playsinline controls></video>
-                
-                <!-- HITBOXES: Double tap block magic -->
-                <div id="zone-left" class="skip-zone skip-left"></div>
-                <div id="zone-right" class="skip-zone skip-right"></div>
-
                 <div id="ripple-left" class="skip-ripple ripple-left">⏪ 10s</div>
                 <div id="ripple-right" class="skip-ripple ripple-right">10s ⏩</div>
             </div>
@@ -142,9 +137,10 @@
         </div>
     </div>
 
+    <!-- PROFILE SCREEN -->
     <div id="profile-screen" class="screen">
         <h2 style="text-align:center; font-family:'Orbitron'; color:var(--primary);">PROFILE</h2>
-        <div class="glass-box" onclick="tg.openTelegramLink('https://t.me/errorkid_05')"><span style="font-size:1.4rem; margin-right:15px;">📢</span> <b>Join Official Channel</b></div>
+        <div class="glass-box" onclick="alert('Join Official Channel Clicked!')"><span style="font-size:1.4rem; margin-right:15px;">📢</span> <b>Join Official Channel</b></div>
     </div>
 
     <div class="dock-container" id="main-dock">
@@ -153,63 +149,101 @@
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand(); tg.setHeaderColor('#09090e');
-        const user = tg.initDataUnsafe.user || {id: 8718760365, first_name: "Student"};
-        if(document.getElementById('u-name')) document.getElementById('u-name').innerText = user.first_name;
-        if(user.photo_url && document.getElementById('u-pic')) document.getElementById('u-pic').src = user.photo_url;
+        // MOCK USER FOR LOCAL TESTING
+        let tg = window.Telegram ? window.Telegram.WebApp : null;
+        if(tg) { tg.expand(); tg.setHeaderColor('#09090e'); }
+        const user = {id: 8718760365, first_name: "Tester Bhai"};
         
-        let fullData = {}; let path = []; let player; let currentVid = null;
+        if(document.getElementById('u-name')) document.getElementById('u-name').innerText = user.first_name;
+        
+        // 🛑 DUMMY DATA FOR LOCAL TESTING
+        let fullData = {
+            "Namkeen Batch": {
+                "Physics by MR Sir": {
+                    "Basic Maths": {
+                        "mode": "video",
+                        "data": [
+                            {
+                                "title": "L1: DUMMY VIDEO 1 (Bunny)",
+                                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                                "pdf": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+                                "dpp": "#"
+                            },
+                            {
+                                "title": "L2: DUMMY VIDEO 2 (Elephant)",
+                                "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                                "pdf": "#",
+                                "dpp": "#"
+                            }
+                        ]
+                    }
+                }
+            }
+        }; 
+
+        let path = []; let player; let currentVid = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             player = new Plyr('#player', {
                 controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen'],
                 settings: ['speed'], speed: { selected: 1, options: [0.5, 1, 1.25, 1.5, 2] },
-                doubleClick: { toggle: false }
+                doubleClick: { toggle: false } // DOUBLE CLICK FULLSCREEN BLOCK
             });
 
-            // BULLETPROOF DOUBLE TAP LOGIC (HITBOXES)
-            let lastTapLeft = 0;
-            document.getElementById('zone-left').addEventListener('touchstart', function(e) {
+            const vidWrapper = document.querySelector('.plyr__video-wrapper');
+            const videoContainer = document.getElementById('video-container');
+            
+            // BLOCK NATIVE DOUBLE CLICK
+            vidWrapper.addEventListener('dblclick', function(e) {
                 e.preventDefault(); e.stopPropagation();
+            }, true);
+
+            // DOUBLE TAP SKIP LOGIC
+            let lastTap = 0;
+            vidWrapper.addEventListener('touchstart', function (e) {
+                if(e.target.closest('.plyr__controls') || e.target.closest('.plyr__control')) return; 
+                
                 let now = new Date().getTime();
-                if(now - lastTapLeft < 300) {
-                    player.rewind(10);
-                    let r = document.getElementById('ripple-left');
-                    r.style.display='flex'; r.style.animation = 'none'; r.offsetHeight; r.style.animation = null;
-                    setTimeout(()=>r.style.display='none', 500);
-                    tg.HapticFeedback.impactOccurred('light');
-                    lastTapLeft = 0; return;
+                if (now - lastTap < 300 && now - lastTap > 0) {
+                    e.preventDefault(); e.stopPropagation();
+                    
+                    let touchX = e.touches[0].clientX;
+                    let touchY = e.touches[0].clientY;
+                    let isRightSide = false;
+
+                    // HORIZONTAL CHECK
+                    if (videoContainer.classList.contains('tg-landscape')) {
+                        // Phone is rotated via CSS, Y-axis represents physical Right/Left
+                        if (touchY > window.innerHeight / 2) isRightSide = true;
+                    } else {
+                        // Vertical mode
+                        if (touchX > window.innerWidth / 2) isRightSide = true;
+                    }
+                    
+                    if (isRightSide) {
+                        player.forward(10);
+                        let r = document.getElementById('ripple-right'); 
+                        r.style.display='flex'; r.style.animation = 'none'; r.offsetHeight; r.style.animation = null;
+                        setTimeout(()=>r.style.display='none', 500);
+                    } else {
+                        player.rewind(10);
+                        let r = document.getElementById('ripple-left'); 
+                        r.style.display='flex'; r.style.animation = 'none'; r.offsetHeight; r.style.animation = null;
+                        setTimeout(()=>r.style.display='none', 500);
+                    }
+                    lastTap = 0; return false;
                 }
-                lastTapLeft = now;
+                lastTap = now;
             }, {passive: false});
 
-            let lastTapRight = 0;
-            document.getElementById('zone-right').addEventListener('touchstart', function(e) {
-                e.preventDefault(); e.stopPropagation();
-                let now = new Date().getTime();
-                if(now - lastTapRight < 300) {
-                    player.forward(10);
-                    let r = document.getElementById('ripple-right');
-                    r.style.display='flex'; r.style.animation = 'none'; r.offsetHeight; r.style.animation = null;
-                    setTimeout(()=>r.style.display='none', 500);
-                    tg.HapticFeedback.impactOccurred('light');
-                    lastTapRight = 0; return;
-                }
-                lastTapRight = now;
-            }, {passive: false});
-
-            // TELEGRAM SCREEN ROTATION
+            // SCREEN ROTATION HACK
             player.on('enterfullscreen', () => {
-                document.getElementById('video-container').classList.add('tg-landscape');
-                tg.HapticFeedback.impactOccurred('medium');
+                videoContainer.classList.add('tg-landscape');
             });
             player.on('exitfullscreen', () => {
-                document.getElementById('video-container').classList.remove('tg-landscape');
+                videoContainer.classList.remove('tg-landscape');
             });
         });
-
-        fetch('/api/get_data').then(r=>r.json()).then(data=>{ fullData = data; });
 
         function showToast(msg) {
             let t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show-toast');
@@ -265,12 +299,10 @@
             }
         }
 
+        // MOCKED DELETE API
         function deleteItem(target) {
             if(!confirm(`Delete "${target}" permanently?`)) return;
-            fetch('/api/admin/delete', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({uid: user.id, path: path, target: target}) })
-            .then(r => r.json()).then(d => { 
-                if(d.status) { showToast("✅ Deleted!"); fetch('/api/get_data').then(res=>res.json()).then(data=>{ fullData=data; renderFolder(); }); } 
-            });
+            showToast("✅ MOCK: Deleted " + target);
         }
 
         function playVideo(vidInfo) {
@@ -285,14 +317,12 @@
             player.play();
         }
 
+        // MOCKED CHAT SEND API
         function sendToChat(type) {
-            let urlToSend = type === 'video' ? currentVid.url : (type === 'pdf' ? currentVid.pdf : currentVid.dpp);
             showToast("⏳ Sending to Bot Chat...");
-            fetch('/api/send_to_chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ uid: user.id, url: urlToSend, title: currentVid.title, type: type }) })
-            .then(r=>r.json()).then(d=>{
-                if(d.status) { showToast("✅ Sent successfully! Check Bot Chat."); tg.HapticFeedback.notificationOccurred('success'); }
-                else { showToast("❌ Failed to send!"); }
-            });
+            setTimeout(() => {
+                showToast("✅ MOCK: Sent successfully! Check Bot Chat.");
+            }, 1000);
         }
 
         function closeVideo() { player.pause(); document.querySelectorAll('.screen').forEach(s => s.style.display='none'); document.getElementById('folder-screen').style.display='flex'; }
