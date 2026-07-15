@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Namkeen Batch</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
@@ -11,57 +11,106 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 
     <style>
+        /* PURANA PREMIUM THEME WAPAS AAGAYA */
         :root { 
-            --bg-home: #09090e; --primary: #00e5ff; --primary-glow: rgba(0, 229, 255, 0.5); --secondary: #6366f1; --text: #f0fdf4;
-            --plyr-color-main: #00e5ff; 
+            --bg-home: #09090e; --primary: #00e5ff; --primary-glow: rgba(0, 229, 255, 0.5); 
+            --secondary: #6366f1; --text: #f0fdf4; --plyr-color-main: #00e5ff; 
         }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0;}
-        body { background: var(--bg-home); color: var(--text); font-family: 'Poppins', sans-serif; height: 100vh; overflow: hidden; }
+        body { background: var(--bg-home); color: var(--text); font-family: 'Poppins', sans-serif; height: 100vh; overflow: hidden; position: relative;}
 
-        /* LOADING SCREEN */
+        /* DOOR TRANSITION (Wapas add kiya) */
+        .door-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; pointer-events: none; }
+        .door-panel { position: absolute; top: 0; width: 100%; height: 100%; background: #000; transition: transform 0.6s cubic-bezier(0.8, 0, 0.2, 1); }
+        .door-left { left: 0; transform: translateX(-100%); clip-path: polygon(0 0, 60% 0, 40% 30%, 70% 40%, 30% 60%, 60% 70%, 40% 100%, 0 100%); border-right: 2px solid var(--primary); }
+        .door-right { right: 0; transform: translateX(100%); clip-path: polygon(100% 0, 60% 0, 40% 30%, 70% 40%, 30% 60%, 60% 70%, 40% 100%, 100% 100%); border-left: 2px solid var(--primary); }
+        .door-closed .door-left, .door-closed .door-right { transform: translateX(0); }
+        .door-closed { pointer-events: all; }
+        .door-closed::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 100%; background: var(--primary); box-shadow: 0 0 40px var(--primary); animation: crackFlash 0.5s infinite alternate; z-index: 10000; }
+        @keyframes crackFlash { from { opacity: 0.4; height: 0%; } to { opacity: 1; height: 100%; } }
+
+        /* TOAST & LOADER */
         #loader { position: fixed; top:0; left:0; width:100%; height:100%; background:#09090e; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index: 10000; }
         .spinner { width: 50px; height: 50px; border: 5px solid rgba(0, 229, 255, 0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* TOAST NOTIFICATION */
-        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: rgba(99, 102, 241, 0.9); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 0.9rem; transition: 0.4s; z-index: 9999; box-shadow: 0 5px 20px rgba(0,0,0,0.5); white-space: nowrap;}
-        .show-toast { bottom: 30px !important; }
+        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: rgba(99, 102, 241, 0.95); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 0.9rem; transition: 0.4s; z-index: 99999; box-shadow: 0 5px 20px rgba(0,0,0,0.5); white-space: nowrap;}
+        .show-toast { bottom: 100px !important; }
 
         .screen { display: none; flex-direction: column; height: 100%; padding: 20px; padding-bottom: 90px; overflow-y: auto; position: relative; }
-        .glass-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 16px; padding: 18px; margin-bottom: 15px; cursor: pointer; display: flex; align-items: center;}
-        .lecture-item { display: flex; align-items: center; justify-content: space-between; background: #0c0c14; padding: 18px; border-radius: 14px; margin-bottom: 12px; border: 1px solid #1f1f2e; cursor: pointer;}
-        #video-container { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--secondary); background: #000; margin-bottom: 20px;}
         
-        .action-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; font-weight: bold; font-family: 'Poppins'; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s;}
+        /* STUDENT PROFILE CARD */
+        .water-card { width: 100%; height: 120px; position: relative; overflow: hidden; background: #0a0a12; border: 1px solid rgba(99, 102, 241, 0.5); border-radius: 24px; display: flex; align-items: center; padding: 20px; margin-bottom: 25px; box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8), 0 5px 20px rgba(0,0,0,0.5); }
+        .id-pic { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; margin-right: 15px; background: #000; box-shadow: 0 0 15px var(--primary-glow); }
+
+        .class-btn { width: 100%; padding: 35px 20px; background: linear-gradient(160deg, #0f101f, #05050a); border: 1px solid var(--secondary); border-radius: 24px; text-align: center; box-shadow: 0 0 25px rgba(99, 102, 241, 0.2); cursor: pointer; transition: 0.3s; }
+        .class-text { font-family: 'Orbitron'; font-size: 1.8rem; font-weight: 900; color: var(--primary); letter-spacing: 2px; text-shadow: 0 0 10px var(--primary-glow); }
+
+        .glass-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 16px; padding: 18px; margin-bottom: 15px; cursor: pointer; display: flex; align-items: center;}
+        .lecture-item { display: flex; align-items: center; justify-content: space-between; background: #0c0c14; padding: 18px; border-radius: 14px; margin-bottom: 12px; border: 1px solid #1f1f2e;}
+
+        /* DOCK (Wapas jagah par) */
+        .dock-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 250px; height: 70px; background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 40px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); z-index: 100; }
+        .dock-item { font-size: 1.6rem; color: #444; width: 55px; height: 55px; display: flex; justify-content: center; align-items: center; border-radius: 50%; transition: 0.3s;}
+        .active-dock { color: var(--primary); transform: translateY(-10px); background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.1); text-shadow: 0 0 20px var(--primary-glow);}
+
+        /* VIDEO PLAYER */
+        #video-container { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--secondary); background: #000; margin-bottom: 20px; position: relative;}
+        
+        .action-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; font-weight: bold; font-family: 'Poppins'; display: flex; justify-content: center; align-items: center; cursor: pointer;}
         .btn-offline { background: rgba(0, 229, 255, 0.1); border: 1px solid var(--primary); color: var(--primary); }
-        .btn-offline:active { background: var(--primary); color: #000; }
         .btn-doc { background: rgba(99, 102, 241, 0.1); border: 1px solid var(--secondary); color: white; }
-        .btn-doc:active { background: var(--secondary); }
+
+        /* TELEGRAM CSS ROTATION HACK FOR FULLSCREEN */
+        .tg-landscape {
+            position: fixed !important; top: 0 !important; left: 0 !important;
+            width: 100vh !important; height: 100vw !important;
+            transform: rotate(90deg) translateY(-100%);
+            transform-origin: top left; z-index: 999999 !important;
+            border-radius: 0 !important; border: none !important;
+        }
+
+        /* DOUBLE TAP RIPPLE EFFECT */
+        .skip-ripple { position: absolute; top: 0; width: 50%; height: 100%; background: rgba(255,255,255,0.2); display: none; align-items: center; justify-content: center; font-size: 2rem; color: white; font-weight: bold; z-index: 50; pointer-events: none; animation: fadeRipple 0.5s linear forwards; }
+        @keyframes fadeRipple { 0% { opacity: 1; } 100% { opacity: 0; } }
+        .ripple-left { left: 0; border-top-right-radius: 50%; border-bottom-right-radius: 50%; }
+        .ripple-right { right: 0; border-top-left-radius: 50%; border-bottom-left-radius: 50%; }
+
     </style>
 </head>
 <body>
 
-    <!-- LOADER -->
-    <div id="loader">
-        <div class="spinner"></div>
-        <div style="margin-top:20px; font-family:'Orbitron'; color:var(--primary); font-weight:bold;">Fetching Lectures...</div>
+    <div id="door-overlay" class="door-overlay">
+        <div class="door-panel door-left"></div>
+        <div class="door-panel door-right"></div>
     </div>
-    <div id="toast">🍿 Network is a bit slow... Wait!</div>
 
+    <div id="loader"><div class="spinner"></div></div>
+    <div id="toast">Message</div>
+
+    <!-- HOME SCREEN -->
     <div id="home-screen" class="screen">
-        <h2 style="text-align:center; font-family:'Orbitron'; color:var(--primary); margin-top:20px;">LEARNING HUB</h2>
-        <div class="glass-box" onclick="nav(['Namkeen Batch'])" style="justify-content:center; flex-direction:column; padding: 40px 20px; background: linear-gradient(160deg, #0f101f, #05050a); margin-top:30px;">
-            <div style="font-family:'Orbitron'; font-size:1.8rem; font-weight:900; color:var(--primary);">NAMKEEN BATCH 🍿</div>
-            <div style="font-size:0.85rem; color:#aaa; margin-top:8px;">CLICK TO EXPLORE</div>
+        <h2 style="text-align:center; font-family:'Orbitron'; color:var(--primary); margin-bottom:20px;">LEARNING HUB</h2>
+        <div class="water-card">
+            <img id="u-pic" class="id-pic" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+            <div style="flex:1; z-index:10; padding-left:10px;">
+                <div style="background:var(--secondary); color:white; padding:3px 10px; border-radius:6px; font-size:0.7rem; font-weight:800; font-family:'Orbitron'; display:inline-block;">PREMIUM STUDENT</div>
+                <div id="u-name" style="font-size:1.3rem; font-weight:700; color:white; margin-top:5px;">Loading...</div>
+            </div>
+        </div>
+        <div class="class-btn" onclick="doorTransition(['Namkeen Batch'])">
+            <div class="class-text">NAMKEEN BATCH 🍿</div>
+            <div style="font-size:0.85rem; color:#aaa; margin-top:8px;">CLICK TO EXPLORE LECTURES</div>
         </div>
     </div>
 
+    <!-- FOLDER SCREEN -->
     <div id="folder-screen" class="screen">
         <h3 id="folder-title" style="text-align:center; font-family:'Orbitron'; color:var(--primary);">LIBRARY</h3>
         <div id="folder-list" style="flex:1; overflow-y:auto; margin-bottom: 20px;"></div>
-        <button onclick="back()" style="width:100%; padding:15px; background:transparent; border:1px solid #444; border-radius:14px; color:#aaa; font-weight:600;">⬅️ GO BACK</button>
+        <button onclick="doorTransition(null, 'back')" style="width:100%; padding:15px; background:transparent; border:1px solid #444; border-radius:14px; color:#aaa; font-weight:600;">⬅️ GO BACK</button>
     </div>
 
+    <!-- VIDEO SCREEN -->
     <div id="video-screen" class="screen" style="padding: 0; background: #050508;">
         <div style="padding: 15px; display: flex; align-items: center; background: #09090e; border-bottom: 1px solid #1f1f2e;">
             <span onclick="closeVideo()" style="font-size: 1.4rem; color: var(--primary); cursor: pointer; margin-right: 15px; padding: 5px;">⬅️</span>
@@ -69,7 +118,12 @@
         </div>
         
         <div style="padding: 15px; flex:1; overflow-y:auto;">
-            <div id="video-container"><video id="player" playsinline controls></video></div>
+            <!-- VIDEO CONTAINER W/ DOUBLE TAP -->
+            <div id="video-container">
+                <video id="player" playsinline controls></video>
+                <div id="ripple-left" class="skip-ripple ripple-left">⏪ 10s</div>
+                <div id="ripple-right" class="skip-ripple ripple-right">10s ⏩</div>
+            </div>
 
             <div id="offline-btn" class="action-btn btn-offline" onclick="sendToChat('video')">📥 Save Video Offline (Bot Chat)</div>
             <div id="pdf-btn" class="action-btn btn-doc" onclick="sendToChat('pdf')">📄 Get Class Notes (Bot Chat)</div>
@@ -77,36 +131,76 @@
         </div>
     </div>
 
+    <!-- PROFILE SCREEN -->
+    <div id="profile-screen" class="screen">
+        <h2 style="text-align:center; font-family:'Orbitron'; color:var(--primary);">PROFILE</h2>
+        <div class="glass-box" onclick="tg.openTelegramLink('https://t.me/errorkid_05')"><span style="font-size:1.4rem; margin-right:15px;">📢</span> <b>Join Official Channel</b></div>
+    </div>
+
+    <!-- DOCK BAR -->
+    <div class="dock-container" id="main-dock">
+        <div class="dock-item active-dock" onclick="switchTab('home', this)">🏠</div>
+        <div class="dock-item" onclick="switchTab('profile', this)">👤</div>
+    </div>
+
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand(); tg.setHeaderColor('#09090e');
-        const user = tg.initDataUnsafe.user || {id: 8718760365, first_name: "Student"}; // testing id
+        const user = tg.initDataUnsafe.user || {id: 8718760365, first_name: "Student"};
+        if(document.getElementById('u-name')) document.getElementById('u-name').innerText = user.first_name;
+        if(user.photo_url && document.getElementById('u-pic')) document.getElementById('u-pic').src = user.photo_url;
         
         let fullData = {}; let path = []; let player; let currentVid = null;
-        
-        // SLOW NETWORK DETECTOR
         let loadTimeout = setTimeout(() => { showToast("🍿 Network is slow... Grab some popcorn!"); }, 5000);
 
-        fetch('/api/get_data').then(r=>r.json()).then(data=>{
-            clearTimeout(loadTimeout);
-            document.getElementById('loader').style.display = 'none';
-            fullData = data; document.getElementById('home-screen').style.display='flex';
-        }).catch(e=>{ showToast("❌ Server Error!"); });
-
+        // INIT PLYR
         document.addEventListener('DOMContentLoaded', () => {
-            // Added fast-forward and rewind controls (10 seconds)
             player = new Plyr('#player', {
-                controls: ['play-large', 'rewind', 'play', 'fast-forward', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen'],
+                controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen'],
                 settings: ['speed'], speed: { selected: 1, options: [0.5, 1, 1.25, 1.5, 2] }
             });
 
-            // AUTOMATIC HORIZONTAL ON FULLSCREEN
+            // 1️⃣ DOUBLE TAP TO SKIP LOGIC (YOUTUBE STYLE)
+            let lastTap = 0;
+            const vidWrapper = document.querySelector('.plyr__video-wrapper');
+            vidWrapper.addEventListener('touchstart', function (e) {
+                let currentTime = new Date().getTime();
+                let tapLength = currentTime - lastTap;
+                
+                if (tapLength < 300 && tapLength > 0) {
+                    let rect = this.getBoundingClientRect();
+                    let touchX = e.touches[0].clientX - rect.left;
+                    
+                    if (touchX > rect.width / 2) {
+                        player.forward(10);
+                        let r = document.getElementById('ripple-right'); r.style.display='flex';
+                        setTimeout(()=>r.style.display='none', 500);
+                        tg.HapticFeedback.impactOccurred('light');
+                    } else {
+                        player.rewind(10);
+                        let r = document.getElementById('ripple-left'); r.style.display='flex';
+                        setTimeout(()=>r.style.display='none', 500);
+                        tg.HapticFeedback.impactOccurred('light');
+                    }
+                }
+                lastTap = currentTime;
+            });
+
+            // 2️⃣ TELEGRAM SCREEN ROTATION HACK
             player.on('enterfullscreen', () => {
-                if(screen.orientation && screen.orientation.lock) { screen.orientation.lock('landscape').catch(()=>{}); }
+                let vc = document.getElementById('video-container');
+                vc.classList.add('tg-landscape');
+                tg.HapticFeedback.impactOccurred('medium');
             });
             player.on('exitfullscreen', () => {
-                if(screen.orientation && screen.orientation.unlock) { screen.orientation.unlock(); }
+                let vc = document.getElementById('video-container');
+                vc.classList.remove('tg-landscape');
             });
+        });
+
+        fetch('/api/get_data').then(r=>r.json()).then(data=>{
+            clearTimeout(loadTimeout); document.getElementById('loader').style.display = 'none';
+            fullData = data; document.getElementById('home-screen').style.display='flex';
         });
 
         function showToast(msg) {
@@ -114,8 +208,28 @@
             setTimeout(() => { t.classList.remove('show-toast'); }, 3000);
         }
 
-        function nav(p) { path=p; document.querySelectorAll('.screen').forEach(s=>s.style.display='none'); document.getElementById('folder-screen').style.display='flex'; renderFolder(); }
-        function back() { if(path.length > 1) { path.pop(); renderFolder(); } else { document.querySelectorAll('.screen').forEach(s=>s.style.display='none'); document.getElementById('home-screen').style.display='flex'; } }
+        // DOOR TRANSITION
+        function doorTransition(p, action) {
+            let door = document.getElementById('door-overlay'); door.classList.add('door-closed');
+            setTimeout(() => {
+                if(action === 'back') { back(); } else { nav(p); }
+                setTimeout(() => { door.classList.remove('door-closed'); }, 500);
+            }, 600);
+        }
+
+        function switchTab(t, btn) {
+            document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
+            document.getElementById(t==='profile' ? 'profile-screen' : 'home-screen').style.display='flex';
+            document.querySelectorAll('.dock-item').forEach(d=>d.classList.remove('active-dock'));
+            if(btn) btn.classList.add('active-dock');
+        }
+
+        function nav(p) { path=p; document.querySelectorAll('.screen').forEach(s=>s.style.display='none'); document.getElementById('folder-screen').style.display='flex'; document.getElementById('main-dock').style.display='none'; renderFolder(); }
+        
+        function back() { 
+            if(path.length > 1) { path.pop(); renderFolder(); } 
+            else { document.querySelectorAll('.screen').forEach(s=>s.style.display='none'); document.getElementById('home-screen').style.display='flex'; document.getElementById('main-dock').style.display='flex'; } 
+        }
         
         function renderFolder() {
             let ref = fullData; path.forEach(k => ref = ref[k]);
@@ -129,18 +243,15 @@
                     d.onclick = () => playVideo(vid); list.appendChild(d);
                 });
             } else {
-                let keys = Object.keys(ref);
-                keys.forEach(k => {
+                Object.keys(ref).forEach(k => {
                     if (k === 'mode' || k === 'data') return;
                     let d = document.createElement('div'); d.className = 'glass-box';
                     d.innerHTML = `<span style="font-size:1.6rem; margin-right:15px;">📁</span> <span style="font-weight:600; font-size:1.05rem;">${k}</span>`;
-                    d.onclick = () => { path.push(k); renderFolder(); };
+                    d.onclick = () => nav([...path, k]);
                     
-                    // ADMIN DELETE MAGIC
                     if(String(user.id) === "8718760365") {
                         let delBtn = document.createElement('span'); delBtn.innerText = '🗑️'; delBtn.style.marginLeft = 'auto'; delBtn.style.fontSize = '1.3rem';
-                        delBtn.onclick = (e) => { e.stopPropagation(); deleteItem(k); };
-                        d.appendChild(delBtn);
+                        delBtn.onclick = (e) => { e.stopPropagation(); deleteItem(k); }; d.appendChild(delBtn);
                     }
                     list.appendChild(d);
                 });
@@ -152,7 +263,6 @@
             fetch('/api/admin/delete', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({uid: user.id, path: path, target: target}) })
             .then(r => r.json()).then(d => { 
                 if(d.status) { showToast("✅ Deleted!"); fetch('/api/get_data').then(res=>res.json()).then(data=>{ fullData=data; renderFolder(); }); } 
-                else { showToast("❌ Error!"); }
             });
         }
 
@@ -161,7 +271,6 @@
             document.querySelectorAll('.screen').forEach(s => s.style.display='none'); document.getElementById('video-screen').style.display = 'flex';
             document.getElementById('vid-title').innerText = vidInfo.title;
             
-            // Buttons Visibility Check
             document.getElementById('pdf-btn').style.display = (vidInfo.pdf && vidInfo.pdf !== "#") ? 'flex' : 'none';
             document.getElementById('dpp-btn').style.display = (vidInfo.dpp && vidInfo.dpp !== "#") ? 'flex' : 'none';
 
@@ -169,19 +278,14 @@
             player.play();
         }
 
-        // SEND TO CHAT FUNCTION (Calling Backend)
         function sendToChat(type) {
             let urlToSend = type === 'video' ? currentVid.url : (type === 'pdf' ? currentVid.pdf : currentVid.dpp);
             showToast("⏳ Sending to Bot Chat...");
-            
-            fetch('/api/send_to_chat', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ uid: user.id, url: urlToSend, title: currentVid.title, type: type })
-            })
+            fetch('/api/send_to_chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ uid: user.id, url: urlToSend, title: currentVid.title, type: type }) })
             .then(r=>r.json()).then(d=>{
                 if(d.status) { showToast("✅ Sent successfully! Check Bot Chat."); tg.HapticFeedback.notificationOccurred('success'); }
                 else { showToast("❌ Failed to send!"); }
-            }).catch(()=>{ showToast("❌ Error!"); });
+            });
         }
 
         function closeVideo() { player.pause(); document.querySelectorAll('.screen').forEach(s => s.style.display='none'); document.getElementById('folder-screen').style.display='flex'; }
