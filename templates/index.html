@@ -341,6 +341,9 @@
         }
 
         // 🔥 ARTPLAYER INITIALIZATION & MAGIC LOGIC
+
+
+// 🔥 MAGIC LOGIC: YOUTUBE + ARTPLAYER HYBRID
         function playVideo(vidInfo) {
             currentVid = vidInfo;
             document.querySelectorAll('.screen').forEach(s => s.style.display='none'); 
@@ -350,111 +353,106 @@
             document.getElementById('pdf-btn').style.display = (vidInfo.pdf && vidInfo.pdf !== "#") ? 'flex' : 'none';
             document.getElementById('dpp-btn').style.display = (vidInfo.dpp && vidInfo.dpp !== "#") ? 'flex' : 'none';
 
-            if (art) {
-                art.switchUrl(vidInfo.url, vidInfo.title);
+            let container = document.getElementById('video-container');
+            let isYouTube = vidInfo.url.includes('youtube.com') || vidInfo.url.includes('youtu.be');
+
+            if (isYouTube) {
+                // 🔴 YOUTUBE VIDEO LOGIC
+                if (art) { art.destroy(); art = null; } // Agar mp4 chal raha tha toh band karo
+                
+                // Link se Video ID nikalna
+                let ytId = "";
+                let match = vidInfo.url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})/);
+                if (match && match[1]) ytId = match[1];
+
+                // YouTube ka asli Iframe Embed karna
+                container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1&autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute; top:0; left:0; width:100%; height:100%;"></iframe>`;
+            
             } else {
-                art = new Artplayer({
-                    container: '#video-container',
-                    url: vidInfo.url,
-                    title: vidInfo.title,
-                    theme: '#00e5ff',           
-                    playbackRate: true,         
-                    setting: true,              
-                    fullscreen: false,       
-                    fullscreenWeb: true,     
-                    fastForward: true,          
-                    lock: true,                 
-                    autoPlayback: true,
-                    dblclickFullscreen: false,  
-                });
-
-                // ⚡ FIX: TIMELINE (SEEK BAR) DRAG IN LANDSCAPE MODE (-90deg ROTATED MATH)
-                let progressControl = art.template.$progress;
+                // 🔵 NORMAL MP4 VIDEO LOGIC (Aapka Jhakas ArtPlayer)
+                container.innerHTML = ''; // YouTube iframe ko hatao
                 
-                function fixRotatedSeek(e) {
-                    if (!art.fullscreenWeb) return; 
+                if (art) {
+                    art.switchUrl(vidInfo.url, vidInfo.title);
+                } else {
+                    art = new Artplayer({
+                        container: '#video-container',
+                        url: vidInfo.url,
+                        title: vidInfo.title,
+                        theme: '#00e5ff',           
+                        playbackRate: true,         
+                        setting: true,              
+                        fullscreen: false,       
+                        fullscreenWeb: true,     
+                        fastForward: true,          
+                        lock: true,                 
+                        autoPlayback: true,
+                        dblclickFullscreen: false,  
+                    });
+
+                    // ⚡ ROTATED MATH FOR TIMELINE DRAG
+                    let progressControl = art.template.$progress;
+                    function fixRotatedSeek(e) {
+                        if (!art.fullscreenWeb) return; 
+                        e.preventDefault(); e.stopPropagation(); 
+                        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                        let rect = progressControl.getBoundingClientRect();
+                        let percentage = (rect.bottom - clientY) / rect.height;
+                        percentage = Math.max(0, Math.min(1, percentage)); 
+                        art.currentTime = percentage * art.duration; 
+                    }
+                    progressControl.addEventListener('touchstart', fixRotatedSeek, { capture: true, passive: false });
+                    progressControl.addEventListener('touchmove', fixRotatedSeek, { capture: true, passive: false });
+                    progressControl.addEventListener('mousedown', fixRotatedSeek, { capture: true, passive: false });
                     
-                    e.preventDefault();
-                    e.stopPropagation(); 
-                    
-                    let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                    let rect = progressControl.getBoundingClientRect();
-                    
-                    // Phone rotated -90deg: Swipe Bottom to Top = Seek Left to Right
-                    let percentage = (rect.bottom - clientY) / rect.height;
-                    percentage = Math.max(0, Math.min(1, percentage)); 
-                    
-                    art.currentTime = percentage * art.duration; 
+                    let isDragging = false;
+                    progressControl.addEventListener('mousedown', () => isDragging = true, { capture: true });
+                    window.addEventListener('mouseup', () => isDragging = false, { capture: true });
+                    progressControl.addEventListener('mousemove', (e) => { if (isDragging) fixRotatedSeek(e); }, { capture: true });
+
+                    // ⚡ FLAWLESS DOUBLE TAP TO SEEK (-90deg FIX)
+                    let lastTapTime = 0;
+                    art.template.$player.addEventListener('pointerdown', function (e) {
+                        if(e.target.closest('.art-bottom') || e.target.closest('.art-setting') || e.target.closest('.art-icon-lock') || e.target.closest('.art-layer-lock')) return;
+                        
+                        let currentTime = new Date().getTime();
+                        let tapGap = currentTime - lastTapTime;
+                        
+                        if (tapGap < 300 && tapGap > 0) {
+                            e.preventDefault(); e.stopPropagation(); 
+                            let isForward = false;
+                            
+                            if (art.fullscreenWeb) isForward = e.clientY < (window.innerHeight / 2);
+                            else isForward = e.clientX > (window.innerWidth / 2);
+
+                            if (isForward) { art.currentTime += 10; showRipple('right', '10s ⏩'); } 
+                            else { art.currentTime -= 10; showRipple('left', '⏪ 10s'); }
+                            
+                            lastTapTime = 0; return false;
+                        }
+                        lastTapTime = currentTime;
+                    }, { capture: true });
+
+                    // ⚡ ZOOM ROTATION FIX
+                    art.on('fullscreenWeb', (state) => {
+                        let vc = document.getElementById('video-container');
+                        if(state) {
+                            vc.classList.add('tg-landscape');
+                            setTimeout(() => art.autoSize(), 150);
+                            try { tg.HapticFeedback.impactOccurred('medium'); } catch(err){}
+                        } else {
+                            vc.classList.remove('tg-landscape');
+                            setTimeout(() => {
+                                art.autoSize();
+                                try { tg.expand(); } catch(e){} 
+                            }, 150);
+                        }
+                    });
                 }
-
-                progressControl.addEventListener('touchstart', fixRotatedSeek, { capture: true, passive: false });
-                progressControl.addEventListener('touchmove', fixRotatedSeek, { capture: true, passive: false });
-                progressControl.addEventListener('mousedown', fixRotatedSeek, { capture: true, passive: false });
-                
-                let isDragging = false;
-                progressControl.addEventListener('mousedown', () => isDragging = true, { capture: true });
-                window.addEventListener('mouseup', () => isDragging = false, { capture: true });
-                progressControl.addEventListener('mousemove', (e) => {
-                    if (isDragging) fixRotatedSeek(e);
-                }, { capture: true });
-
-
-                // ⚡ FLAWLESS DOUBLE TAP TO SEEK (-90deg FIX)
-                let lastTapTime = 0;
-                
-                art.template.$player.addEventListener('pointerdown', function (e) {
-                    if(e.target.closest('.art-bottom') || e.target.closest('.art-setting') || e.target.closest('.art-icon-lock') || e.target.closest('.art-layer-lock')) return;
-                    
-                    let currentTime = new Date().getTime();
-                    let tapGap = currentTime - lastTapTime;
-                    
-                    if (tapGap < 300 && tapGap > 0) {
-                        e.preventDefault(); 
-                        e.stopPropagation(); 
-                        
-                        let isForward = false;
-                        
-                        if (art.fullscreenWeb) {
-                            // -90deg rotated: Phone Top = Right side of video (Forward)
-                            isForward = e.clientY < (window.innerHeight / 2);
-                        } else {
-                            // Portrait: Right side of phone = Forward
-                            isForward = e.clientX > (window.innerWidth / 2);
-                        }
-
-                        if (isForward) {
-                            art.currentTime += 10;
-                            showRipple('right', '10s ⏩');
-                        } else {
-                            art.currentTime -= 10;
-                            showRipple('left', '⏪ 10s');
-                        }
-                        lastTapTime = 0; 
-                        return false;
-                    }
-                    lastTapTime = currentTime;
-                }, { capture: true });
-
-                // ⚡ ZOOM PAR TG EXPAND FIX
-                art.on('fullscreenWeb', (state) => {
-                    let vc = document.getElementById('video-container');
-                    if(state) {
-                        vc.classList.add('tg-landscape');
-                        setTimeout(() => art.autoSize(), 150);
-                        try { tg.HapticFeedback.impactOccurred('medium'); } catch(err){}
-                    } else {
-                        vc.classList.remove('tg-landscape');
-                        setTimeout(() => {
-                            art.autoSize();
-                            try { tg.expand(); } catch(e){} // 👈 Wapas chota hone pe Floating popup banne se rokega
-                        }, 150);
-                    }
-                });
+                art.play();
             }
-            art.play();
         }
 
-        // Helper: Skip Animation Ripple
         function showRipple(side, text) {
             let ripple = document.createElement('div');
             ripple.className = `seek-ripple-container seek-${side}`;
@@ -476,10 +474,15 @@
         }
 
         function closeVideo() { 
-            if(art) art.pause(); 
+            // Video band karte time sab saaf kardo taaki background me awaz na aaye
+            if(art) { art.destroy(); art = null; } 
+            document.getElementById('video-container').innerHTML = ''; 
+            
             document.querySelectorAll('.screen').forEach(s => s.style.display='none'); 
             document.getElementById('folder-screen').style.display='flex'; 
         }
+
+        
     </script>
 </body>
 </html>
