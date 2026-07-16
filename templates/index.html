@@ -100,7 +100,8 @@
         #video-container { width: 100%; aspect-ratio: 16/9; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0, 229, 255, 0.4); background: #000; margin-bottom: 15px; position: relative; box-shadow: 0 0 25px rgba(0, 229, 255, 0.15);}
         
         /* 🔥 MASTERSTROKE: -90 DEGREE ROTATION */
-        div#video-container.tg-landscape {
+        /* 🔥 ASLI ROTATION FIX (ArtPlayer ki internal body ko target kiya) */
+        .art-video-player.art-fullscreen-web {
             position: fixed !important; 
             top: 50% !important; 
             left: 50% !important;
@@ -115,6 +116,12 @@
             max-width: none !important;
             max-height: none !important;
             background: #000 !important;
+        }
+
+        /* 🔥 CONTROLS SAFE AREA (X button se door) */
+        .art-video-player.art-fullscreen-web .art-bottom {
+            padding: 0 60px !important; 
+            padding-bottom: 20px !important;
         }
 
         /* 🔥 KINARO SE BUTTONS DOOR RAKHNE KE LIYE (X and Dots Fix) */
