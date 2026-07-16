@@ -101,11 +101,12 @@
         
         /* 🔥 MASTERSTROKE: -90 DEGREE ROTATION */
         /* 🔥 ASLI ROTATION FIX (ArtPlayer ki internal body ko target kiya) */
+       /* 🔥 ASLI ROTATION FIX (Top 70px Telegram Header ke liye chhod diya) */
         .art-video-player.art-fullscreen-web {
             position: fixed !important; 
-            top: 50% !important; 
-            left: 50% !important;
-            width: 100vh !important; 
+            top: calc(50vh + 35px) !important; /* Center ko 35px niche khiskaya */
+            left: 50vw !important;
+            width: calc(100vh - 70px) !important; /* Video ki width se 70px kam kar diya */
             height: 100vw !important;
             transform: translate(-50%, -50%) rotate(-90deg) !important;
             transform-origin: center center !important; 
@@ -116,12 +117,6 @@
             max-width: none !important;
             max-height: none !important;
             background: #000 !important;
-        }
-
-        /* 🔥 CONTROLS SAFE AREA (X button se door) */
-        .art-video-player.art-fullscreen-web .art-bottom {
-            padding: 0 60px !important; 
-            padding-bottom: 20px !important;
         }
 
         /* 🔥 KINARO SE BUTTONS DOOR RAKHNE KE LIYE (X and Dots Fix) */
