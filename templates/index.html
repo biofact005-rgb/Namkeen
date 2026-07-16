@@ -344,6 +344,37 @@
                     dblclickFullscreen: false,  
                 });
 
+                // ⚡ FIX: TIMELINE (SEEK BAR) DRAG IN LANDSCAPE MODE (ROTATED MATH)
+                let progressControl = art.template.$progress;
+                
+                function fixRotatedSeek(e) {
+                    if (!art.fullscreenWeb) return; // Agar rotate nahi hai, toh Artplayer khud handle karega
+                    
+                    e.preventDefault();
+                    e.stopPropagation(); // Artplayer ka default math block kar do
+                    
+                    let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    let rect = progressControl.getBoundingClientRect();
+                    
+                    // Rotated phone me: Top se Bottom = Timeline ka Left se Right
+                    let percentage = (clientY - rect.top) / rect.height;
+                    percentage = Math.max(0, Math.min(1, percentage)); // 0% se 100% ke beech limit karo
+                    
+                    art.currentTime = percentage * art.duration; // Video ko nayi jagah par bhej do
+                }
+
+                // Touch & Click events ko high priority (capture) pe override karna
+                progressControl.addEventListener('touchstart', fixRotatedSeek, { capture: true, passive: false });
+                progressControl.addEventListener('touchmove', fixRotatedSeek, { capture: true, passive: false });
+                progressControl.addEventListener('mousedown', fixRotatedSeek, { capture: true, passive: false });
+                
+                let isDragging = false;
+                progressControl.addEventListener('mousedown', () => isDragging = true, { capture: true });
+                window.addEventListener('mouseup', () => isDragging = false, { capture: true });
+                progressControl.addEventListener('mousemove', (e) => {
+                    if (isDragging) fixRotatedSeek(e);
+                }, { capture: true });
+
                 // ⚡ FLAWLESS DOUBLE TAP TO SEEK
                 let lastTapTime = 0;
                 
