@@ -53,8 +53,11 @@
         .water-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%); z-index: 5; pointer-events: none; }
         .id-pic { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; margin-right: 15px; background: #000; z-index: 2; box-shadow: 0 0 15px var(--primary-glow); }
 
+        /* 🔥 HOME SCREEN BUTTON ANIMATION (WAPAS DAAL DIYA) */
         .class-btn { width: 100%; padding: 30px; background: linear-gradient(160deg, #0f101f, #05050a); border: 1px solid var(--primary); border-radius: 24px; text-align: center; box-shadow: 0 0 25px rgba(0, 229, 255, 0.1); cursor: pointer; position: relative; overflow: hidden; transition: 0.3s; margin-top: 10px; }
         .class-btn:active { transform: scale(0.97); }
+        .class-btn::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(0, 229, 255, 0.15), transparent 60%); animation: spin 8s linear infinite; pointer-events: none; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
         .class-text { font-family: 'Orbitron'; font-size: 2rem; font-weight: 900; color: var(--primary); letter-spacing: 2px; text-shadow: 0 0 10px var(--primary-glow); position: relative; z-index: 2; }
 
         /* ==========================================
@@ -87,7 +90,16 @@
         
         #video-container { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0, 229, 255, 0.4); background: #000; margin-bottom: 15px; position: relative; box-shadow: 0 0 25px rgba(0, 229, 255, 0.15);}
         
-        /* 🔥 THE FIX: pointer-events: none hone se settings button block nahi hoga */
+        /* 🔥 TELEGRAM CSS ROTATION HACK - Active during Zoom */
+        .tg-landscape {
+            position: fixed !important; top: 0 !important; left: 0 !important;
+            width: 100vh !important; height: 100vw !important;
+            transform: rotate(90deg) translateY(-100%);
+            transform-origin: top left; z-index: 999999 !important;
+            border-radius: 0 !important; border: none !important;
+        }
+        
+        /* 🔥 SINGLE TAP CUSTOM OVERLAY */
         .vid-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; justify-content: center; align-items: center; gap: 20px;
@@ -95,7 +107,6 @@
         }
         .vid-overlay.show { opacity: 1; }
         
-        /* 🔥 THE FIX: Sirf ye buttons click ho sakte hain, baaki jagah click plyr pe jayega */
         .overlay-btn {
             width: 55px; height: 55px; border-radius: 50%;
             background: rgba(15, 15, 20, 0.65); border: 1px solid rgba(255,255,255,0.2);
@@ -152,6 +163,7 @@
             </div>
         </div>
         <div style="margin-top:20px;">
+            <!-- Ye button animation wapas aa gaya hai! -->
             <div class="class-btn" onclick="doorTransition(['Namkeen Batch'])">
                 <div class="class-text">NAMKEEN BATCH 🍿</div>
                 <div style="font-size:0.8rem; color:#888; margin-top:8px; font-weight:500;">TAP TO ACCESS LECTURES</div>
@@ -176,22 +188,19 @@
         <div style="padding: 15px; padding-bottom: 40px;">
             <div id="video-container">
                 <video id="player" playsinline controls></video>
-                
-                <!-- 🔥 PREMIUM CUSTOM SVG OVERLAY (No more cheap emojis) -->
-                <div id="vid-overlay" class="vid-overlay">
-                    <!-- Rewind 10s Material Icon -->
-                    <div class="overlay-btn" onclick="skip(event, -10)">
-                        <svg fill="white" viewBox="0 0 24 24" width="28" height="28"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8zm-1.1 11H10v-3.3L9 13v-.7l1.8-.6h.1v4.3zm3.1-1.2l-.3 1.2c-.3-.2-.5-.5-.5-.8s-.1-.6-.1-.9v-1.1c0-.4.1-.7.2-1 .2-.2.5-.4.8-.4s.5.1.7.3c.2.2.3.5.3.9v1.1c0 .3-.1.6-.2.8-.2.2-.4.4-.9.6zm.5-2.2c0-.2-.1-.3-.2-.4-.1-.1-.3-.2-.4-.2s-.3.1-.4.2-.2.3-.2.4v1.2c0 .2.1.3.2.4.1.1.3.2.4.2s.3-.1.4-.2.2-.3.2-.5v-1.1z"/></svg>
-                    </div>
-                    <!-- Play/Pause Icon -->
-                    <div class="overlay-btn btn-play-center" id="overlay-play" onclick="togglePlay(event)">
-                        <svg id="icon-play" fill="white" viewBox="0 0 24 24" width="36" height="36"><path d="M8 5v14l11-7z"/></svg>
-                        <svg id="icon-pause" fill="white" viewBox="0 0 24 24" width="36" height="36" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                    </div>
-                    <!-- Forward 10s Material Icon -->
-                    <div class="overlay-btn" onclick="skip(event, 10)">
-                        <svg fill="white" viewBox="0 0 24 24" width="28" height="28"><path d="M18 13c0 3.31-2.69 6-6 6s-6-2.69-6-6 2.69-6 6-6v4l5-5-5-5v4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8h-2zm-5.9 1.8l-.3 1.2c-.3-.2-.5-.5-.5-.8s-.1-.6-.1-.9v-1.1c0-.4.1-.7.2-1 .2-.2.5-.4.8-.4s.5.1.7.3c.2.2.3.5.3.9v1.1c0 .3-.1.6-.2.8-.2.2-.4.4-.9.6zm.5-2.2c0-.2-.1-.3-.2-.4-.1-.1-.3-.2-.4-.2s-.3.1-.4.2-.2.3-.2.4v1.2c0 .2.1.3.2.4.1.1.3.2.4.2s.3-.1.4-.2.2-.3.2-.5v-1.1zm2.3 3.4H14v-3.3l-1 1.3v-.7l1.8-.6h.1v4.3z"/></svg>
-                    </div>
+            </div>
+            
+            <!-- 🔥 PREMIUM CUSTOM SVG OVERLAY -->
+            <div id="vid-overlay" class="vid-overlay">
+                <div class="overlay-btn" onclick="skip(event, -10)">
+                    <svg fill="white" viewBox="0 0 24 24" width="28" height="28"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8zm-1.1 11H10v-3.3L9 13v-.7l1.8-.6h.1v4.3zm3.1-1.2l-.3 1.2c-.3-.2-.5-.5-.5-.8s-.1-.6-.1-.9v-1.1c0-.4.1-.7.2-1 .2-.2.5-.4.8-.4s.5.1.7.3c.2.2.3.5.3.9v1.1c0 .3-.1.6-.2.8-.2.2-.4.4-.9.6zm.5-2.2c0-.2-.1-.3-.2-.4-.1-.1-.3-.2-.4-.2s-.3.1-.4.2-.2.3-.2.4v1.2c0 .2.1.3.2.4.1.1.3.2.4.2s.3-.1.4-.2.2-.3.2-.5v-1.1z"/></svg>
+                </div>
+                <div class="overlay-btn btn-play-center" id="overlay-play" onclick="togglePlay(event)">
+                    <svg id="icon-play" fill="white" viewBox="0 0 24 24" width="36" height="36"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="icon-pause" fill="white" viewBox="0 0 24 24" width="36" height="36" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </div>
+                <div class="overlay-btn" onclick="skip(event, 10)">
+                    <svg fill="white" viewBox="0 0 24 24" width="28" height="28"><path d="M18 13c0 3.31-2.69 6-6 6s-6-2.69-6-6 2.69-6 6-6v4l5-5-5-5v4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8h-2zm-5.9 1.8l-.3 1.2c-.3-.2-.5-.5-.5-.8s-.1-.6-.1-.9v-1.1c0-.4.1-.7.2-1 .2-.2.5-.4.8-.4s.5.1.7.3c.2.2.3.5.3.9v1.1c0 .3-.1.6-.2.8-.2.2-.4.4-.9.6zm.5-2.2c0-.2-.1-.3-.2-.4-.1-.1-.3-.2-.4-.2s-.3.1-.4.2-.2.3-.2.4v1.2c0 .2.1.3.2.4.1.1.3.2.4.2s.3-.1.4-.2.2-.3.2-.5v-1.1zm2.3 3.4H14v-3.3l-1 1.3v-.7l1.8-.6h.1v4.3z"/></svg>
                 </div>
             </div>
 
@@ -233,7 +242,6 @@
     </div>
 
     <script>
-        // 🔒 CORE LOGIC (SAFE)
         const tg = window.Telegram.WebApp;
         tg.expand(); tg.setHeaderColor('#09090e');
         const user = tg.initDataUnsafe.user || {id: 8718760365, first_name: "Student"};
@@ -254,8 +262,22 @@
                 e.preventDefault(); e.stopPropagation();
             });
 
-            // 🔥 Perfect Sync with Plyr's Native Show/Hide
-            let overlay = document.getElementById('vid-overlay');
+            // 🔥 ZOOM BUTTON PE ROTATION 
+            player.on('enterfullscreen', () => {
+                let vc = document.getElementById('video-container');
+                vc.classList.add('tg-landscape');
+                try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+            });
+            player.on('exitfullscreen', () => {
+                let vc = document.getElementById('video-container');
+                vc.classList.remove('tg-landscape');
+            });
+
+            // 🔥 FIX: Overlay ko Plyr ke andar ghusa diya, taaki zoom me bhi saath jaaye!
+            const plyrContainer = document.querySelector('.plyr');
+            const overlay = document.getElementById('vid-overlay');
+            plyrContainer.appendChild(overlay);
+
             let iconPlay = document.getElementById('icon-play');
             let iconPause = document.getElementById('icon-pause');
             
@@ -272,19 +294,18 @@
             });
         });
 
-        // 🔥 Overlay Button Actions (Ab click Plyr ko disturb nahi karega)
+        // 🔥 Overlay Button Actions 
         function skip(e, sec) { 
-            e.preventDefault(); e.stopPropagation(); // Bubble up block
+            e.preventDefault(); e.stopPropagation();
             if(sec > 0) player.forward(sec); else player.rewind(Math.abs(sec));
             try { tg.HapticFeedback.impactOccurred('light'); } catch(err){}
         }
         function togglePlay(e) { 
-            e.preventDefault(); e.stopPropagation(); // Bubble up block
+            e.preventDefault(); e.stopPropagation(); 
             player.togglePlay(); 
             try { tg.HapticFeedback.impactOccurred('medium'); } catch(err){}
         }
 
-        // 🔄 API CALLS
         fetch('/api/get_data').then(r=>r.json()).then(data=>{ fullData = data; });
 
         function showToast(msg) {
