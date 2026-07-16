@@ -41,19 +41,15 @@
         @keyframes crackFlash { from { opacity: 0.4; height: 0%; } to { opacity: 1; height: 100%; } }
 
         /* 🔥 UNIVERSAL SCROLL FIX */
-        /* 🔥 UNIVERSAL SCROLL & TELEGRAM HEADER OVERLAP FIX */
+        /* 🔥 UNIVERSAL SCROLL FIX (X button se door rakhne ke liye) */
         .screen { 
             display: none; flex-direction: column; 
-            position: absolute; 
-            top: var(--tg-safe-area-inset-top, 55px); /* Telegram Header / Close Button ke niche se start hoga */
-            left: 0; 
-            width: 100%; 
-            height: calc(100% - var(--tg-safe-area-inset-top, 55px)); /* Bachi hui puri height use karega */
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             padding: 20px; 
+            padding-top: 60px; /* 👈 THE FIX: 60px ka gap de diya upar se */
             padding-bottom: 120px; 
             overflow-y: auto; overflow-x: hidden; z-index: 5;
         }
-
         /* ==========================================
            💧 WATER CARD & HOME EFFECTS
         ========================================== */
@@ -95,8 +91,14 @@
         /* ==========================================
            🎥 VIDEO PLAYER (ARTPLAYER CUSTOM CSS)
         ========================================== */
-        .top-bar-glass { padding: 15px; display: flex; align-items: center; background: rgba(9, 9, 14, 0.85); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.05); z-index:10; position: sticky; top: 0;}
-        
+       /* 🔥 VIDEO PLAYER TOP BAR */
+        .top-bar-glass { 
+            padding: 15px; display: flex; align-items: center; 
+            background: rgba(9, 9, 14, 0.85); backdrop-filter: blur(15px); 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            z-index:10; border-radius: 12px; margin-bottom: 15px;
+            /* Yahan se 'position: sticky' hata diya hai taaki scroll karne pe upar X me na ghuse */
+        }
         #video-container { width: 100%; aspect-ratio: 16/9; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0, 229, 255, 0.4); background: #000; margin-bottom: 15px; position: relative; box-shadow: 0 0 25px rgba(0, 229, 255, 0.15);}
         
         /* 🔥 THE MAGIC: TELEGRAM WEBAPP PERFECT LANDSCAPE FIX */
@@ -445,9 +447,24 @@
                     lastTapTime = currentTime;
                 }, { capture: true });
 
-                // Vibrate on fullscreen
+             // ⚡ ZOOM BUTTON CLICK PAR ROTATION & X-BUTTON HIDE
                 art.on('fullscreenWeb', (state) => {
-                    try { tg.HapticFeedback.impactOccurred('medium'); } catch(err){}
+                    let vc = document.getElementById('video-container');
+                    if(state) {
+                        vc.classList.add('tg-landscape');
+                        setTimeout(() => art.autoSize(), 150);
+                        
+                        // 🔥 THE FIX: Zoom karte hi Telegram ko command do ki 'X' button hata de
+                        try { if (tg.requestFullscreen) tg.requestFullscreen(); } catch(e){}
+                        
+                        try { tg.HapticFeedback.impactOccurred('medium'); } catch(err){}
+                    } else {
+                        vc.classList.remove('tg-landscape');
+                        setTimeout(() => art.autoSize(), 150);
+                        
+                        // 🔥 Wapas chota hone par 'X' button wapas le aao
+                        try { if (tg.exitFullscreen) tg.exitFullscreen(); } catch(e){}
+                    }
                 });
             }
             art.play();
