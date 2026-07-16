@@ -91,15 +91,10 @@
         ========================================== */
         .top-bar-glass { padding: 15px; display: flex; align-items: center; background: rgba(9, 9, 14, 0.85); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.05); z-index:10; position: sticky; top: 0;}
         
-        /* 🔥 ArtPlayer Container needs proper aspect ratio */
         #video-container { width: 100%; aspect-ratio: 16/9; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0, 229, 255, 0.4); background: #000; margin-bottom: 15px; position: relative; box-shadow: 0 0 25px rgba(0, 229, 255, 0.15);}
         
-        /* 🔥 TELEGRAM CSS ROTATION HACK - Landscape Mode */
-        
-/* 🔥 TELEGRAM CSS ROTATION HACK - ZOOM F
-
-        /* 🔥 TELEGRAM CSS ROTATION HACK - 100% WORKING (Strict Override) */
-        div#video-container.tg-landscape {
+        /* 🔥 THE MAGIC: TELEGRAM WEBAPP PERFECT LANDSCAPE FIX */
+        .art-video-player.art-fullscreen-web {
             position: fixed !important;
             top: 50% !important;
             left: 50% !important;
@@ -111,9 +106,9 @@
             border-radius: 0 !important;
             margin: 0 !important;
             padding: 0 !important;
-            max-width: none !important;
-            max-height: none !important;
+            background: #000 !important;
         }
+
         /* 🔥 CUSTOM DOUBLE TAP RIPPLE EFFECT */
         .seek-ripple-container {
             position: absolute; top: 0; width: 50%; height: 100%;
@@ -244,10 +239,10 @@
         if(user.photo_url && document.getElementById('u-pic')) document.getElementById('u-pic').src = user.photo_url;
         
         let fullData = {}; let path = []; 
-        let art = null; // Naya ArtPlayer instance
+        let art = null; 
         let currentVid = null;
 
-        // 🔄 API CALLS (100% UNTOUCHED)
+        // 🔄 API CALLS 
         fetch('/api/get_data').then(r=>r.json()).then(data=>{ fullData = data; });
 
         function showToast(msg) {
@@ -321,7 +316,6 @@
             });
         }
 
-        // 🔥 ARTPLAYER INITIALIZATION & MAGIC LOG
         // 🔥 ARTPLAYER INITIALIZATION & MAGIC LOGIC
         function playVideo(vidInfo) {
             currentVid = vidInfo;
@@ -332,11 +326,9 @@
             document.getElementById('pdf-btn').style.display = (vidInfo.pdf && vidInfo.pdf !== "#") ? 'flex' : 'none';
             document.getElementById('dpp-btn').style.display = (vidInfo.dpp && vidInfo.dpp !== "#") ? 'flex' : 'none';
 
-            // Agar player pehle se bana hai, toh naya URL daal do bina delete kiye
             if (art) {
                 art.switchUrl(vidInfo.url, vidInfo.title);
             } else {
-                // Pehli baar player ban raha hai
                 art = new Artplayer({
                     container: '#video-container',
                     url: vidInfo.url,
@@ -344,59 +336,56 @@
                     theme: '#00e5ff',           
                     playbackRate: true,         
                     setting: true,              
-                    fullscreenWeb: true,        
+                    fullscreen: false,       // ⚠️ DISABLED Native Fullscreen (Telegram Blocks it)
+                    fullscreenWeb: true,     // ⚠️ ENABLED Web Fullscreen (Our CSS Rotates this)
                     fastForward: true,          
                     lock: true,                 
                     autoPlayback: true,
-                    dblclickFullscreen: false,  // Ise false hi rakhna hai
+                    dblclickFullscreen: false,  
                 });
 
-                // ⚡ FLAWLESS DOUBLE TAP TO SEEK (FIXED!)
+                // ⚡ FLAWLESS DOUBLE TAP TO SEEK
                 let lastTapTime = 0;
                 
-                // .art-video player ka main container hota hai
                 art.template.$player.addEventListener('pointerdown', function (e) {
-                    // Agar settings, seekbar ya lock button pe tap kiya hai toh double-tap ignore karo
-                    if(e.target.closest('.art-controls') || e.target.closest('.art-setting')) return; 
+                    if(e.target.closest('.art-bottom') || e.target.closest('.art-setting') || e.target.closest('.art-icon-lock') || e.target.closest('.art-layer-lock')) return;
                     
                     let currentTime = new Date().getTime();
                     let tapGap = currentTime - lastTapTime;
                     
                     if (tapGap < 300 && tapGap > 0) {
                         e.preventDefault(); 
-                        e.stopPropagation(); // ArtPlayer ko interfere karne se rokna
+                        e.stopPropagation(); 
                         
-                        let rect = art.template.$player.getBoundingClientRect();
-                        let clickX = e.clientX - rect.left; 
+                        let isForward = false;
                         
-                        if (clickX > rect.width / 2) {
+                        if (art.fullscreenWeb) {
+                            // Jab Rotate hota hai, phone ka Bottom = Forward (Right)
+                            isForward = e.clientY > (window.innerHeight / 2);
+                        } else {
+                            // Jab Portrait hota hai, phone ka Right = Forward
+                            isForward = e.clientX > (window.innerWidth / 2);
+                        }
+
+                        if (isForward) {
                             art.currentTime += 10;
                             showRipple('right', '10s ⏩');
                         } else {
                             art.currentTime -= 10;
                             showRipple('left', '⏪ 10s');
                         }
-                        lastTapTime = 0; // Reset kar diya taaki bug na aaye
+                        lastTapTime = 0; 
                         return false;
                     }
                     lastTapTime = currentTime;
-                }, { capture: true }); // Capture true is VERY important here!
+                }, { capture: true });
 
-                // ⚡ ZOOM BUTTON CLICK PAR ROTATION (LANDSCAPE)
+                // Vibrate on fullscreen
                 art.on('fullscreenWeb', (state) => {
-                    let vc = document.getElementById('video-container');
-                    if(state) {
-                        vc.classList.add('tg-landscape');
-                        setTimeout(() => art.autoSize(), 150); // Rotate hone ke baad screen pe perfectly fit karega
-                        try { tg.HapticFeedback.impactOccurred('medium'); } catch(err){}
-                    } else {
-                        vc.classList.remove('tg-landscape');
-                        setTimeout(() => art.autoSize(), 150); // Wapas normal karega
-                    }
+                    try { tg.HapticFeedback.impactOccurred('medium'); } catch(err){}
                 });
-            } // ⚠️ YAHAN AAPNE BRACKET MISS KIYA THA!
-            
-            art.play(); // ⚠️ YE BHI MISS HO GAYA THA!
+            }
+            art.play();
         }
 
         // Helper: Skip Animation Ripple
@@ -405,10 +394,7 @@
             ripple.className = `seek-ripple-container seek-${side}`;
             ripple.innerText = text;
             ripple.style.display = 'flex';
-            
-            // Player ke theek upar append hoga
             art.template.$player.appendChild(ripple);
-            
             setTimeout(() => { ripple.remove(); }, 500);
             try { tg.HapticFeedback.impactOccurred('light'); } catch(err){}
         }
