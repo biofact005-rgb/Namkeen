@@ -11,7 +11,7 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     
-    <!-- 🔥 NAYA PLAYER: ArtPlayer CDN -->
+    <!-- 🔥 ARTPLAYER CDN -->
     <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
 
     <style>
@@ -40,16 +40,20 @@
         .door-closed::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 100%; background: var(--primary); box-shadow: 0 0 40px var(--primary); animation: crackFlash 0.5s infinite alternate; z-index: 10000; }
         @keyframes crackFlash { from { opacity: 0.4; height: 0%; } to { opacity: 1; height: 100%; } }
 
-        /* 🔥 UNIVERSAL SCROLL FIX */
-        /* 🔥 UNIVERSAL SCROLL FIX (X button se door rakhne ke liye) */
+        /* 🔥 STRICT PORTRAIT OVERLAP FIX (70px margin from top X button) */
         .screen { 
             display: none; flex-direction: column; 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            padding: 20px; 
-            padding-top: 60px; /* 👈 THE FIX: 60px ka gap de diya upar se */
+            position: absolute; 
+            top: 70px !important; 
+            left: 0; 
+            width: 100%; 
+            height: calc(100% - 70px) !important; 
+            padding: 15px; 
+            padding-top: 0px; 
             padding-bottom: 120px; 
             overflow-y: auto; overflow-x: hidden; z-index: 5;
         }
+
         /* ==========================================
            💧 WATER CARD & HOME EFFECTS
         ========================================== */
@@ -91,30 +95,32 @@
         /* ==========================================
            🎥 VIDEO PLAYER (ARTPLAYER CUSTOM CSS)
         ========================================== */
-       /* 🔥 VIDEO PLAYER TOP BAR */
-        .top-bar-glass { 
-            padding: 15px; display: flex; align-items: center; 
-            background: rgba(9, 9, 14, 0.85); backdrop-filter: blur(15px); 
-            border-bottom: 1px solid rgba(255,255,255,0.05); 
-            z-index:10; border-radius: 12px; margin-bottom: 15px;
-            /* Yahan se 'position: sticky' hata diya hai taaki scroll karne pe upar X me na ghuse */
-        }
+        .top-bar-glass { padding: 15px; display: flex; align-items: center; background: rgba(9, 9, 14, 0.85); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.05); z-index:10; border-radius: 12px; margin-bottom: 15px;}
+        
         #video-container { width: 100%; aspect-ratio: 16/9; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0, 229, 255, 0.4); background: #000; margin-bottom: 15px; position: relative; box-shadow: 0 0 25px rgba(0, 229, 255, 0.15);}
         
-        /* 🔥 THE MAGIC: TELEGRAM WEBAPP PERFECT LANDSCAPE FIX */
-        .art-video-player.art-fullscreen-web {
-            position: fixed !important;
-            top: 50% !important;
+        /* 🔥 MASTERSTROKE: -90 DEGREE ROTATION */
+        div#video-container.tg-landscape {
+            position: fixed !important; 
+            top: 50% !important; 
             left: 50% !important;
-            width: 100vh !important;
+            width: 100vh !important; 
             height: 100vw !important;
-            transform: translate(-50%, -50%) rotate(90deg) !important;
-            transform-origin: center center !important;
+            transform: translate(-50%, -50%) rotate(-90deg) !important;
+            transform-origin: center center !important; 
             z-index: 999999 !important;
-            border-radius: 0 !important;
+            border-radius: 0 !important; 
             margin: 0 !important;
             padding: 0 !important;
+            max-width: none !important;
+            max-height: none !important;
             background: #000 !important;
+        }
+
+        /* 🔥 KINARO SE BUTTONS DOOR RAKHNE KE LIYE (X and Dots Fix) */
+        .tg-landscape .art-bottom {
+            padding: 0 60px !important; 
+            padding-bottom: 20px !important;
         }
 
         /* 🔥 CUSTOM DOUBLE TAP RIPPLE EFFECT */
@@ -192,6 +198,7 @@
 
     <!-- 🎥 VIDEO SCREEN -->
     <div id="video-screen" class="screen" style="padding: 0; background: #050508;">
+        
         <div class="top-bar-glass">
             <span onclick="closeVideo()" style="font-size: 1.4rem; color: var(--primary); cursor: pointer; margin-right: 15px; padding: 5px;">⬅️</span>
             <div style="font-size: 1.1rem; font-weight: 600; font-family:'Orbitron';">Video Player</div>
@@ -199,7 +206,6 @@
         
         <div style="padding: 15px; padding-bottom: 40px;">
             
-            <!-- 🔥 Yaha ArtPlayer Render hoga -->
             <div id="video-container"></div>
             
             <div class="now-playing-box" style="margin-top: 15px;">
@@ -207,7 +213,6 @@
                 <div id="np-title" class="np-title">Loading Lecture Title...</div>
             </div>
 
-            <!-- 🔥 Study Materials & Attachments -->
             <div class="section-heading">📂 Attachments & Materials</div>
             <div class="action-buttons-grid">
                 <div id="offline-btn" class="premium-btn btn-offline action-btn-full" onclick="sendToChat('video')">
@@ -239,37 +244,18 @@
     </div>
 
     <script>
-        
-        // 🔒 CORE LOGIC 
+        // 🔒 CORE LOGIC & FULLSCREEN/SWIPE FIXES
         const tg = window.Telegram.WebApp;
         tg.expand(); 
         
-        // 🔥 TABLET & DESKTOP TRUE FULLSCREEN FIX
+        try { if (tg.requestFullscreen) tg.requestFullscreen(); } catch(e) {}
         try {
-            if (tg.requestFullscreen) {
-                tg.requestFullscreen();
-            }
-        } catch(e) {}
-        
-        // 🛑 SWIPE TO CLOSE LOCK & CONFIRMATION FIX
-        try {
-            if (tg.disableVerticalSwipes) {
-                tg.disableVerticalSwipes(); // 👈 Ye swipe karke band hone se rokega
-            }
-            if (tg.enableClosingConfirmation) {
-                tg.enableClosingConfirmation(); // 👈 (Bonus) Galti se X dab gaya toh warning dega ki "Are you sure?"
-            }
+            if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); 
+            if (tg.enableClosingConfirmation) tg.enableClosingConfirmation(); 
         } catch(e) {}
         
         tg.setHeaderColor('#09090e');
-        // 🔥 TABLET & DESKTOP TRUE FULLSCREEN FIX
-        try {
-            if (tg.requestFullscreen) {
-                tg.requestFullscreen();
-            }
-        } catch(e) {}
         
-        tg.setHeaderColor('#09090e');
         const user = tg.initDataUnsafe.user || {id: 8718760365, first_name: "Student"};
         if(document.getElementById('u-name')) document.getElementById('u-name').innerText = user.first_name;
         if(user.photo_url && document.getElementById('u-pic')) document.getElementById('u-pic').src = user.photo_url;
@@ -372,34 +358,33 @@
                     theme: '#00e5ff',           
                     playbackRate: true,         
                     setting: true,              
-                    fullscreen: false,       // ⚠️ DISABLED Native Fullscreen (Telegram Blocks it)
-                    fullscreenWeb: true,     // ⚠️ ENABLED Web Fullscreen (Our CSS Rotates this)
+                    fullscreen: false,       
+                    fullscreenWeb: true,     
                     fastForward: true,          
                     lock: true,                 
                     autoPlayback: true,
                     dblclickFullscreen: false,  
                 });
 
-                // ⚡ FIX: TIMELINE (SEEK BAR) DRAG IN LANDSCAPE MODE (ROTATED MATH)
+                // ⚡ FIX: TIMELINE (SEEK BAR) DRAG IN LANDSCAPE MODE (-90deg ROTATED MATH)
                 let progressControl = art.template.$progress;
                 
                 function fixRotatedSeek(e) {
-                    if (!art.fullscreenWeb) return; // Agar rotate nahi hai, toh Artplayer khud handle karega
+                    if (!art.fullscreenWeb) return; 
                     
                     e.preventDefault();
-                    e.stopPropagation(); // Artplayer ka default math block kar do
+                    e.stopPropagation(); 
                     
                     let clientY = e.touches ? e.touches[0].clientY : e.clientY;
                     let rect = progressControl.getBoundingClientRect();
                     
-                    // Rotated phone me: Top se Bottom = Timeline ka Left se Right
-                    let percentage = (clientY - rect.top) / rect.height;
-                    percentage = Math.max(0, Math.min(1, percentage)); // 0% se 100% ke beech limit karo
+                    // Phone rotated -90deg: Swipe Bottom to Top = Seek Left to Right
+                    let percentage = (rect.bottom - clientY) / rect.height;
+                    percentage = Math.max(0, Math.min(1, percentage)); 
                     
-                    art.currentTime = percentage * art.duration; // Video ko nayi jagah par bhej do
+                    art.currentTime = percentage * art.duration; 
                 }
 
-                // Touch & Click events ko high priority (capture) pe override karna
                 progressControl.addEventListener('touchstart', fixRotatedSeek, { capture: true, passive: false });
                 progressControl.addEventListener('touchmove', fixRotatedSeek, { capture: true, passive: false });
                 progressControl.addEventListener('mousedown', fixRotatedSeek, { capture: true, passive: false });
@@ -411,7 +396,8 @@
                     if (isDragging) fixRotatedSeek(e);
                 }, { capture: true });
 
-                // ⚡ FLAWLESS DOUBLE TAP TO SEEK
+
+                // ⚡ FLAWLESS DOUBLE TAP TO SEEK (-90deg FIX)
                 let lastTapTime = 0;
                 
                 art.template.$player.addEventListener('pointerdown', function (e) {
@@ -427,10 +413,10 @@
                         let isForward = false;
                         
                         if (art.fullscreenWeb) {
-                            // Jab Rotate hota hai, phone ka Bottom = Forward (Right)
-                            isForward = e.clientY > (window.innerHeight / 2);
+                            // -90deg rotated: Phone Top = Right side of video (Forward)
+                            isForward = e.clientY < (window.innerHeight / 2);
                         } else {
-                            // Jab Portrait hota hai, phone ka Right = Forward
+                            // Portrait: Right side of phone = Forward
                             isForward = e.clientX > (window.innerWidth / 2);
                         }
 
@@ -447,23 +433,19 @@
                     lastTapTime = currentTime;
                 }, { capture: true });
 
-             // ⚡ ZOOM BUTTON CLICK PAR ROTATION & X-BUTTON HIDE
+                // ⚡ ZOOM PAR TG EXPAND FIX
                 art.on('fullscreenWeb', (state) => {
                     let vc = document.getElementById('video-container');
                     if(state) {
                         vc.classList.add('tg-landscape');
                         setTimeout(() => art.autoSize(), 150);
-                        
-                        // 🔥 THE FIX: Zoom karte hi Telegram ko command do ki 'X' button hata de
-                        try { if (tg.requestFullscreen) tg.requestFullscreen(); } catch(e){}
-                        
                         try { tg.HapticFeedback.impactOccurred('medium'); } catch(err){}
                     } else {
                         vc.classList.remove('tg-landscape');
-                        setTimeout(() => art.autoSize(), 150);
-                        
-                        // 🔥 Wapas chota hone par 'X' button wapas le aao
-                        try { if (tg.exitFullscreen) tg.exitFullscreen(); } catch(e){}
+                        setTimeout(() => {
+                            art.autoSize();
+                            try { tg.expand(); } catch(e){} // 👈 Wapas chota hone pe Floating popup banne se rokega
+                        }, 150);
                     }
                 });
             }
