@@ -11,16 +11,22 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 
     <style>
-        /* ORIGINAL PREMIUM THEME */
+        /* ==========================================
+           🎨 PREMIUM THEME VARIABLES
+        ========================================== */
         :root { 
             --bg-home: #09090e; --bg-quiz: #050508; 
             --primary: #00e5ff; --primary-glow: rgba(0, 229, 255, 0.4);
             --secondary: #6366f1; --text: #f0fdf4; --plyr-color-main: #00e5ff;
+            --glass-bg: rgba(20, 20, 30, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
         }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; outline: none; margin:0; padding:0;}
         body { background: var(--bg-home); color: var(--text); font-family: 'Poppins', sans-serif; height: 100vh; overflow: hidden; position: relative;}
 
-        /* DOOR TRANSITION */
+        /* ==========================================
+           🚪 DOOR TRANSITION
+        ========================================== */
         .door-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; pointer-events: none; }
         .door-panel { position: absolute; top: 0; width: 100%; height: 100%; background: #000; transition: transform 0.6s cubic-bezier(0.8, 0, 0.2, 1); }
         .door-left { left: 0; transform: translateX(-100%); clip-path: polygon(0 0, 60% 0, 40% 30%, 70% 40%, 30% 60%, 60% 70%, 40% 100%, 0 100%); border-right: 2px solid var(--primary); }
@@ -32,7 +38,9 @@
 
         .screen { display: none; flex-direction: column; height: 100%; padding: 20px; padding-bottom: 90px; overflow-y: auto; z-index: 5; position: relative; }
 
-        /* WATER CARD & EFFECTS */
+        /* ==========================================
+           💧 WATER CARD & HOME EFFECTS
+        ========================================== */
         .water-card { width: 100%; height: 160px; position: relative; overflow: hidden; background: #0a0a12; border: 1px solid rgba(0, 229, 255, 0.4); border-radius: 24px; display: flex; align-items: center; padding: 20px; margin-bottom: 25px; box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8), 0 5px 20px rgba(0,0,0,0.5); }
         #water-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; background: linear-gradient(180deg, var(--primary) 0%, #0c4a6e 100%); z-index: 1; opacity: 0.5; animation: wave 4s ease-in-out infinite alternate; }
         @keyframes wave { 0% { transform: scaleY(0.9); } 100% { transform: scaleY(1.1); } }
@@ -45,37 +53,56 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .class-text { font-family: 'Orbitron'; font-size: 2rem; font-weight: 900; color: var(--primary); letter-spacing: 2px; text-shadow: 0 0 10px var(--primary-glow); position: relative; z-index: 2; }
 
-        .glass-box { background: rgba(255,255,255,0.03); border: var(--border); border-radius: 16px; padding: 18px; margin-bottom: 15px; cursor: pointer; display: flex; align-items: center;}
-        .lecture-item { display: flex; align-items: center; justify-content: space-between; background: #0c0c14; padding: 18px; border-radius: 14px; margin-bottom: 12px; border: 1px solid #1f1f2e;}
+        /* ==========================================
+           📂 GLASSMORPHISM LIBRARY (FOLDERS)
+        ========================================== */
+        .glass-box { background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 18px; margin-bottom: 15px; cursor: pointer; display: flex; align-items: center; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.3);}
+        .glass-box:active { transform: scale(0.98); }
+
+        .lecture-item { display: flex; align-items: center; justify-content: space-between; background: var(--glass-bg); backdrop-filter: blur(12px); padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; cursor: pointer;}
+        .lecture-item:active { transform: scale(0.98); background: rgba(0, 229, 255, 0.05); }
         
-        /* DOCK */
+        .play-icon-wrapper { width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 229, 255, 0.1); border: 1px solid var(--primary); display: flex; justify-content: center; align-items: center; margin-right: 15px; font-size: 1.1rem; box-shadow: 0 0 10px var(--primary-glow); }
+
+        .back-btn-modern { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: #ccc; border-radius: 20px; padding: 14px; text-align: center; font-weight: 600; margin-top: 10px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer;}
+        .back-btn-modern:active { background: rgba(255,255,255,0.1); transform: scale(0.98); color: white;}
+
+        /* ==========================================
+           📱 DOCK & TOAST
+        ========================================== */
         .dock-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 250px; height: 70px; background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 40px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); z-index: 100; }
-        .dock-item { font-size: 1.6rem; color: #444; transition: 0.3s; width: 55px; height: 55px; display: flex; justify-content: center; align-items: center; border-radius: 50%; }
+        .dock-item { font-size: 1.6rem; color: #444; transition: 0.3s; width: 55px; height: 55px; display: flex; justify-content: center; align-items: center; border-radius: 50%; cursor: pointer;}
         .active-dock { color: var(--primary); transform: translateY(-10px); text-shadow: 0 0 20px var(--primary-glow); background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.1); }
 
         #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: rgba(99, 102, 241, 0.95); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 0.9rem; transition: 0.4s; z-index: 99999; box-shadow: 0 5px 20px rgba(0,0,0,0.5); white-space: nowrap;}
         .show-toast { bottom: 100px !important; }
 
-        /* VIDEO PLAYER */
-        #video-container { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--secondary); background: #000; margin-bottom: 20px; position: relative;}
-        .action-btn { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; font-weight: bold; font-family: 'Poppins'; display: flex; justify-content: center; align-items: center; cursor: pointer;}
-        .btn-offline { background: rgba(0, 229, 255, 0.1); border: 1px solid var(--primary); color: var(--primary); }
-        .btn-doc { background: rgba(99, 102, 241, 0.1); border: 1px solid var(--secondary); color: white; }
+        /* ==========================================
+           🎥 VIDEO PLAYER & ACTION BUTTONS
+        ========================================== */
+        .top-bar-glass { padding: 15px; display: flex; align-items: center; background: rgba(9, 9, 14, 0.85); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.05); z-index:10; position: sticky; top: 0;}
+        
+        #video-container { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0, 229, 255, 0.4); background: #000; margin-bottom: 20px; position: relative; box-shadow: 0 0 25px rgba(0, 229, 255, 0.15);}
+        
+        .action-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .action-btn-full { grid-column: span 2; }
+        
+        .premium-btn { position: relative; overflow: hidden; border-radius: 14px; font-weight: 600; font-family: 'Poppins'; display: flex; justify-content: center; align-items: center; gap: 8px; padding: 15px; cursor: pointer; transition: 0.3s; text-align: center; }
+        .premium-btn:active { transform: scale(0.97); }
+        .premium-btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); animation: shine 4s infinite; }
+        @keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+
+        .btn-offline { background: linear-gradient(135deg, #0f172a, #082f49); border: 1px solid var(--primary); color: #fff; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2);}
+        .btn-doc { background: linear-gradient(135deg, #1e1b4b, #312e81); border: 1px solid var(--secondary); color: #fff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);}
 
         /* TELEGRAM CSS ROTATION HACK FOR FULLSCREEN ONLY */
-        .tg-landscape {
-            position: fixed !important; top: 0 !important; left: 0 !important;
-            width: 100vh !important; height: 100vw !important;
-            transform: rotate(90deg) translateY(-100%);
-            transform-origin: top left; z-index: 999999 !important;
-            border-radius: 0 !important; border: none !important;
-        }
+        .tg-landscape { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vh !important; height: 100vw !important; transform: rotate(90deg) translateY(-100%); transform-origin: top left; z-index: 999999 !important; border-radius: 0 !important; border: none !important; }
 
         /* DOUBLE TAP RIPPLE EFFECT */
-        .skip-ripple { position: absolute; top: 0; width: 50%; height: 100%; background: rgba(255,255,255,0.15); display: none; align-items: center; justify-content: center; font-size: 2.5rem; color: white; font-weight: bold; z-index: 50; pointer-events: none; animation: fadeRipple 0.5s linear forwards; }
+        .skip-ripple { position: absolute; top: 0; width: 50%; height: 100%; background: rgba(255,255,255,0.15); display: none; align-items: center; justify-content: center; font-size: 2.5rem; color: white; font-weight: bold; z-index: 50; pointer-events: none; }
         @keyframes fadeRipple { 0% { opacity: 1; transform:scale(0.9);} 100% { opacity: 0; transform:scale(1.1);} }
-        .ripple-left { left: 0; border-top-right-radius: 50%; border-bottom-right-radius: 50%; }
-        .ripple-right { right: 0; border-top-left-radius: 50%; border-bottom-left-radius: 50%; }
+        .ripple-left { left: 0; border-top-right-radius: 50%; border-bottom-right-radius: 50%; background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent); }
+        .ripple-right { right: 0; border-top-left-radius: 50%; border-bottom-left-radius: 50%; background: linear-gradient(-90deg, rgba(255,255,255,0.2), transparent); }
     </style>
 </head>
 <body>
@@ -86,7 +113,7 @@
     </div>
     <div id="toast">Message</div>
 
-    <!-- HOME SCREEN -->
+    <!-- 🏠 HOME SCREEN -->
     <div id="home-screen" class="screen" style="display:flex;">
         <h2 style="text-align:center; font-family:'Orbitron'; color:var(--primary); letter-spacing:2px; text-shadow:0 0 20px var(--primary-glow);">LEARNING HUB</h2>
         
@@ -113,16 +140,16 @@
         </div>
     </div>
 
-    <!-- FOLDER SCREEN -->
+    <!-- 📁 FOLDER SCREEN -->
     <div id="folder-screen" class="screen">
-        <h3 id="folder-title" style="text-align:center; font-family:'Orbitron'; color:var(--primary);">LIBRARY</h3>
-        <div id="folder-list" style="flex:1; overflow-y:auto; margin-bottom: 20px;"></div>
-        <button onclick="doorTransition(null, 'back')" style="width:100%; padding:15px; background:transparent; border:1px solid #444; border-radius:14px; color:#aaa; font-weight:600;">⬅️ GO BACK</button>
+        <h3 id="folder-title" style="text-align:center; font-family:'Orbitron'; color:var(--primary); text-shadow: 0 0 15px var(--primary-glow); margin-bottom: 20px;">LIBRARY</h3>
+        <div id="folder-list" style="flex:1; overflow-y:auto; margin-bottom: 10px;"></div>
+        <div class="back-btn-modern" onclick="doorTransition(null, 'back')">⬅️ GO BACK</div>
     </div>
 
-    <!-- VIDEO SCREEN -->
+    <!-- 🎥 VIDEO SCREEN -->
     <div id="video-screen" class="screen" style="padding: 0; background: #050508;">
-        <div style="padding: 15px; display: flex; align-items: center; background: #09090e; border-bottom: 1px solid #1f1f2e; z-index:10;">
+        <div class="top-bar-glass">
             <span onclick="closeVideo()" style="font-size: 1.4rem; color: var(--primary); cursor: pointer; margin-right: 15px; padding: 5px;">⬅️</span>
             <div id="vid-title" style="font-size: 1rem; font-weight: 600; white-space: nowrap; overflow:hidden; text-overflow:ellipsis;">Loading...</div>
         </div>
@@ -134,24 +161,38 @@
                 <div id="ripple-right" class="skip-ripple ripple-right">10s ⏩</div>
             </div>
 
-            <div id="offline-btn" class="action-btn btn-offline" onclick="sendToChat('video')">📥 Save Video Offline (Bot Chat)</div>
-            <div id="pdf-btn" class="action-btn btn-doc" onclick="sendToChat('pdf')">📄 Get Class Notes (Bot Chat)</div>
-            <div id="dpp-btn" class="action-btn btn-doc" onclick="sendToChat('dpp')">📝 Get DPP (Bot Chat)</div>
+            <!-- NAYA PREMIUM ACTION BUTTONS (GRID LAYOUT) -->
+            <div class="action-buttons-grid">
+                <div id="offline-btn" class="premium-btn btn-offline action-btn-full" onclick="sendToChat('video')">
+                    <span style="font-size: 1.3rem;">📥</span> Save Video Offline
+                </div>
+                <div id="pdf-btn" class="premium-btn btn-doc" onclick="sendToChat('pdf')">
+                    <span style="font-size: 1.2rem;">📄</span> Class Notes
+                </div>
+                <div id="dpp-btn" class="premium-btn btn-doc" onclick="sendToChat('dpp')">
+                    <span style="font-size: 1.2rem;">📝</span> Get DPP
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- PROFILE SCREEN -->
+    <!-- 👤 PROFILE SCREEN -->
     <div id="profile-screen" class="screen">
-        <h2 style="text-align:center; font-family:'Orbitron'; color:var(--primary);">PROFILE</h2>
-        <div class="glass-box" onclick="tg.openTelegramLink('https://t.me/errorkid_05')"><span style="font-size:1.4rem; margin-right:15px;">📢</span> <b>Join Official Channel</b></div>
+        <h2 style="text-align:center; font-family:'Orbitron'; color:var(--primary); margin-bottom:20px;">PROFILE</h2>
+        <div class="glass-box" onclick="tg.openTelegramLink('https://t.me/errorkid_05')">
+            <span style="font-size:1.5rem; margin-right:15px; text-shadow:0 0 10px var(--primary-glow);">📢</span> 
+            <b>Join Official Channel</b>
+        </div>
     </div>
 
+    <!-- 📱 BOTTOM DOCK -->
     <div class="dock-container" id="main-dock">
         <div class="dock-item active-dock" onclick="switchTab('home', this)">🏠</div>
         <div class="dock-item" onclick="switchTab('profile', this)">👤</div>
     </div>
 
     <script>
+        // 🔒 CORE LOGIC (SAFE & UNTOUCHED)
         const tg = window.Telegram.WebApp;
         tg.expand(); tg.setHeaderColor('#09090e');
         const user = tg.initDataUnsafe.user || {id: 8718760365, first_name: "Student"};
@@ -164,53 +205,55 @@
             player = new Plyr('#player', {
                 controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen'],
                 settings: ['speed'], speed: { selected: 1, options: [0.5, 1, 1.25, 1.5, 2] },
-                doubleClick: { toggle: false } // PLYR DEFAULT DOUBLE CLICK BAND KAR DIYA
+                doubleClick: { toggle: false } 
             });
 
             const vidWrapper = document.querySelector('.plyr__video-wrapper');
             
-            // 🛑 BROWSER KA DEFAULT DOUBLE CLICK BHI BAND KAR DIYA TAki FULLSCREEN NA HO
+            // 🛑 DEFAULT DOUBLE CLICK COMPLETELY BLOCKED 
             vidWrapper.addEventListener('dblclick', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
             });
 
-            // 1️⃣ DOUBLE TAP 10s SKIP (HEAVY SECURITY KE SATH)
-            let lastTap = 0;
-            // passive: false is compulsory on mobile to stop double tap from bypassing us
-            vidWrapper.addEventListener('touchstart', function (e) {
+            // ⚡ CUSTOM ROBUST 10s SKIP (Fix for rotation & mobile touch)
+            let lastTapTime = 0;
+            vidWrapper.addEventListener('pointerdown', function (e) {
                 if(e.target.closest('.plyr__controls') || e.target.closest('.plyr__control')) return; 
                 
                 let currentTime = new Date().getTime();
-                let tapLength = currentTime - lastTap;
+                let tapGap = currentTime - lastTapTime;
                 
-                if (tapLength < 300 && tapLength > 0) {
-                    e.preventDefault(); // Browser ko roko
-                    e.stopPropagation(); // Plyr ko roko
+                if (tapGap < 300 && tapGap > 0) {
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
                     
                     let rect = this.getBoundingClientRect();
-                    let touchX = e.touches[0].clientX - rect.left;
+                    let clickX = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
                     
-                    if (touchX > rect.width / 2) {
+                    if (clickX > rect.width / 2) {
                         player.forward(10);
-                        let r = document.getElementById('ripple-right'); 
-                        r.style.display='flex'; r.style.animation = 'none'; r.offsetHeight; r.style.animation = null;
-                        setTimeout(()=>r.style.display='none', 500);
-                        tg.HapticFeedback.impactOccurred('light');
+                        triggerRipple('ripple-right');
                     } else {
                         player.rewind(10);
-                        let r = document.getElementById('ripple-left'); 
-                        r.style.display='flex'; r.style.animation = 'none'; r.offsetHeight; r.style.animation = null;
-                        setTimeout(()=>r.style.display='none', 500);
-                        tg.HapticFeedback.impactOccurred('light');
+                        triggerRipple('ripple-left');
                     }
-                    lastTap = 0; // triple tap bug block karne ke liye reset
+                    lastTapTime = 0; 
                     return false;
                 }
-                lastTap = currentTime;
-            }, {passive: false}); 
+                lastTapTime = currentTime;
+            }); 
 
-            // 2️⃣ TELEGRAM SCREEN ROTATION HACK (Sirf [ ] dabane par hi chalega ab)
+            // Helper for 10s Skip Animation
+            function triggerRipple(id) {
+                let r = document.getElementById(id);
+                r.style.display = 'flex'; r.style.animation = 'none'; void r.offsetWidth; // trigger reflow
+                r.style.animation = 'fadeRipple 0.5s linear forwards';
+                setTimeout(() => { r.style.display = 'none'; }, 500);
+                try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+            }
+
+            // TELEGRAM CSS ROTATION HACK (Ab strictly manual fullscreen btn se chalega)
             player.on('enterfullscreen', () => {
                 let vc = document.getElementById('video-container');
                 vc.classList.add('tg-landscape');
@@ -222,6 +265,7 @@
             });
         });
 
+        // 🔄 API CALLS (SAFE)
         fetch('/api/get_data').then(r=>r.json()).then(data=>{ fullData = data; });
 
         function showToast(msg) {
@@ -259,7 +303,16 @@
             if(ref.mode === 'video' && Array.isArray(ref.data)) {
                 ref.data.forEach(vid => {
                     let d = document.createElement('div'); d.className = 'lecture-item';
-                    d.innerHTML = `<div><div style="font-weight:600; font-size:0.95rem;">${vid.title}</div><div style="font-size:0.7rem; color:var(--primary); margin-top:5px;">▶️ VIDEO LECTURE</div></div><span style="font-size: 1.5rem;">⏯️</span>`;
+                    d.innerHTML = `
+                        <div style="display:flex; align-items:center;">
+                            <div class="play-icon-wrapper">▶️</div>
+                            <div>
+                                <div style="font-weight:600; font-size:0.95rem; color:#fff;">${vid.title}</div>
+                                <div style="font-size:0.7rem; color:var(--primary); margin-top:4px; font-weight:500; letter-spacing:0.5px;">🎥 VIDEO LECTURE</div>
+                            </div>
+                        </div>
+                        <span style="font-size: 1.2rem; color:#888;">⋮</span>
+                    `;
                     d.onclick = () => playVideo(vid); list.appendChild(d);
                 });
             } else {
@@ -303,7 +356,7 @@
             showToast("⏳ Sending to Bot Chat...");
             fetch('/api/send_to_chat', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ uid: user.id, url: urlToSend, title: currentVid.title, type: type }) })
             .then(r=>r.json()).then(d=>{
-                if(d.status) { showToast("✅ Sent successfully! Check Bot Chat."); tg.HapticFeedback.notificationOccurred('success'); }
+                if(d.status) { showToast("✅ Sent successfully! Check Bot Chat."); try {tg.HapticFeedback.notificationOccurred('success');}catch(e){} }
                 else { showToast("❌ Failed to send!"); }
             });
         }
