@@ -311,6 +311,9 @@
         }
 
         // 🔥 ARTPLAYER INITIALIZATION & MAGIC LOGIC
+
+
+// 🔥 ARTPLAYER INITIALIZATION & MAGIC LOGIC
         function playVideo(vidInfo) {
             currentVid = vidInfo;
             document.querySelectorAll('.screen').forEach(s => s.style.display='none'); 
@@ -329,40 +332,46 @@
                     container: '#video-container',
                     url: vidInfo.url,
                     title: vidInfo.title,
-                    theme: '#00e5ff',           // Aapka neon blue theme
-                    playbackRate: true,         // Speed control in-built
-                    setting: true,              // Quality/Settings in-built
-                    fullscreenWeb: true,        // Native mobile support ke liye best
-                    fastForward: true,          // Screen hold karne par 3x speed chalegi!
-                    lock: true,                 // Screen lock button (no accidental touch)
-                    autoPlayback: false,
-                    dblclickFullscreen: false,  // Double tap to fullscreen band karke Skip feature use karenge
+                    theme: '#00e5ff',           
+                    playbackRate: true,         
+                    setting: true,              
+                    fullscreenWeb: true,        
+                    fastForward: true,          
+                    lock: true,                 
+                    autoPlayback: true,
+                    dblclickFullscreen: false,  // Ise false hi rakhna hai
                 });
 
-                // ⚡ FLAWLESS DOUBLE TAP TO SEEK (YouTube Style)
-                let lastTap = 0;
-                art.on('video:touchstart', (e) => {
-                    let currentTime = new Date().getTime();
-                    let tapLength = currentTime - lastTap;
+                // ⚡ FLAWLESS DOUBLE TAP TO SEEK (FIXED!)
+                let lastTapTime = 0;
+                
+                // .art-video player ka main container hota hai
+                art.template.$player.addEventListener('pointerdown', function (e) {
+                    // Agar settings, seekbar ya lock button pe tap kiya hai toh double-tap ignore karo
+                    if(e.target.closest('.art-controls') || e.target.closest('.art-setting')) return; 
                     
-                    if (tapLength < 300 && tapLength > 0) {
-                        e.preventDefault();
+                    let currentTime = new Date().getTime();
+                    let tapGap = currentTime - lastTapTime;
+                    
+                    if (tapGap < 300 && tapGap > 0) {
+                        e.preventDefault(); 
+                        e.stopPropagation(); // ArtPlayer ko interfere karne se rokna
                         
-                        let rect = art.template.$video.getBoundingClientRect();
-                        let touchX = e.touches[0].clientX - rect.left;
-
-                        if (touchX > rect.width / 2) {
+                        let rect = art.template.$player.getBoundingClientRect();
+                        let clickX = e.clientX - rect.left; 
+                        
+                        if (clickX > rect.width / 2) {
                             art.currentTime += 10;
                             showRipple('right', '10s ⏩');
                         } else {
                             art.currentTime -= 10;
                             showRipple('left', '⏪ 10s');
                         }
-                        lastTap = 0;
-                    } else {
-                        lastTap = currentTime;
+                        lastTapTime = 0; // Reset kar diya taaki bug na aaye
+                        return false;
                     }
-                });
+                    lastTapTime = currentTime;
+                }, { capture: true }); // Capture true is VERY important here!
 
                 // ⚡ ZOOM BUTTON CLICK PAR ROTATION (LANDSCAPE)
                 art.on('fullscreenWeb', (state) => {
@@ -385,13 +394,14 @@
             ripple.innerText = text;
             ripple.style.display = 'flex';
             
-            // Append exactly inside Artplayer
+            // Player ke theek upar append hoga
             art.template.$player.appendChild(ripple);
             
             setTimeout(() => { ripple.remove(); }, 500);
             try { tg.HapticFeedback.impactOccurred('light'); } catch(err){}
         }
 
+        
         function sendToChat(type) {
             let urlToSend = type === 'video' ? currentVid.url : (type === 'pdf' ? currentVid.pdf : currentVid.dpp);
             showToast("⏳ Sending to Bot Chat...");
