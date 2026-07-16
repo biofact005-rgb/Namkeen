@@ -41,10 +41,16 @@
         @keyframes crackFlash { from { opacity: 0.4; height: 0%; } to { opacity: 1; height: 100%; } }
 
         /* 🔥 UNIVERSAL SCROLL FIX */
+        /* 🔥 UNIVERSAL SCROLL & TELEGRAM HEADER OVERLAP FIX */
         .screen { 
             display: none; flex-direction: column; 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            padding: 20px; padding-bottom: 120px; 
+            position: absolute; 
+            top: var(--tg-safe-area-inset-top, 55px); /* Telegram Header / Close Button ke niche se start hoga */
+            left: 0; 
+            width: 100%; 
+            height: calc(100% - var(--tg-safe-area-inset-top, 55px)); /* Bachi hui puri height use karega */
+            padding: 20px; 
+            padding-bottom: 120px; 
             overflow-y: auto; overflow-x: hidden; z-index: 5;
         }
 
