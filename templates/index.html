@@ -36,7 +36,13 @@
         .door-closed::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 100%; background: var(--primary); box-shadow: 0 0 40px var(--primary); animation: crackFlash 0.5s infinite alternate; z-index: 10000; }
         @keyframes crackFlash { from { opacity: 0.4; height: 0%; } to { opacity: 1; height: 100%; } }
 
-        .screen { display: none; flex-direction: column; height: 100%; padding: 20px; padding-bottom: 90px; overflow-y: auto; z-index: 5; position: relative; }
+        /* 🔥 UNIVERSAL SCROLL FIX: Poore app me kahi kuch katega nahi */
+        .screen { 
+            display: none; flex-direction: column; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            padding: 20px; padding-bottom: 120px; /* Dock ke liye space */
+            overflow-y: auto; overflow-x: hidden; z-index: 5;
+        }
 
         /* ==========================================
            💧 WATER CARD & HOME EFFECTS
@@ -62,9 +68,9 @@
         .lecture-item { display: flex; align-items: center; justify-content: space-between; background: var(--glass-bg); backdrop-filter: blur(12px); padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; cursor: pointer;}
         .lecture-item:active { transform: scale(0.98); background: rgba(0, 229, 255, 0.05); }
         
-        .play-icon-wrapper { width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 229, 255, 0.1); border: 1px solid var(--primary); display: flex; justify-content: center; align-items: center; margin-right: 15px; font-size: 1.1rem; box-shadow: 0 0 10px var(--primary-glow); }
+        .play-icon-wrapper { width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 229, 255, 0.1); border: 1px solid var(--primary); display: flex; justify-content: center; align-items: center; margin-right: 15px; font-size: 1.1rem; box-shadow: 0 0 10px var(--primary-glow); flex-shrink: 0; }
 
-        .back-btn-modern { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: #ccc; border-radius: 20px; padding: 14px; text-align: center; font-weight: 600; margin-top: 10px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer;}
+        .back-btn-modern { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: #ccc; border-radius: 20px; padding: 14px; text-align: center; font-weight: 600; margin-top: 15px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer;}
         .back-btn-modern:active { background: rgba(255,255,255,0.1); transform: scale(0.98); color: white;}
 
         /* ==========================================
@@ -78,13 +84,38 @@
         .show-toast { bottom: 100px !important; }
 
         /* ==========================================
-           🎥 VIDEO PLAYER & ACTION BUTTONS
+           🎥 VIDEO PLAYER & OVERLAY UI
         ========================================== */
         .top-bar-glass { padding: 15px; display: flex; align-items: center; background: rgba(9, 9, 14, 0.85); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.05); z-index:10; position: sticky; top: 0;}
         
-        #video-container { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0, 229, 255, 0.4); background: #000; margin-bottom: 20px; position: relative; box-shadow: 0 0 25px rgba(0, 229, 255, 0.15);}
+        #video-container { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0, 229, 255, 0.4); background: #000; margin-bottom: 15px; position: relative; box-shadow: 0 0 25px rgba(0, 229, 255, 0.15);}
         
-        .action-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        /* 🔥 Single Tap Overlay (10s skip & play/pause) */
+        .vid-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; gap: 25px;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 10;
+        }
+        .vid-overlay.show { opacity: 1; pointer-events: auto; }
+        
+        .overlay-btn {
+            width: 50px; height: 50px; border-radius: 50%; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
+            color: white; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
+        .overlay-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.9); }
+        .btn-play-center { width: 65px; height: 65px; font-size: 1.6rem; background: rgba(0, 229, 255, 0.2); border-color: var(--primary); color: var(--primary); }
+
+        /* ==========================================
+           📚 LECTURE DETAILS & STUDY MATERIAL UI
+        ========================================== */
+        .now-playing-box { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 14px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .np-badge { font-size: 0.7rem; color: var(--primary); font-weight: 700; letter-spacing: 1px; margin-bottom: 5px; font-family: 'Orbitron';}
+        .np-title { font-size: 1rem; color: white; font-weight: 600; line-height: 1.4; word-wrap: break-word;}
+
+        .section-heading { font-size: 1.1rem; color: #fff; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-family: 'Orbitron'; }
+        
+        .action-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .action-btn-full { grid-column: span 2; }
         
         .premium-btn { position: relative; overflow: hidden; border-radius: 14px; font-weight: 600; font-family: 'Poppins'; display: flex; justify-content: center; align-items: center; gap: 8px; padding: 15px; cursor: pointer; transition: 0.3s; text-align: center; }
@@ -94,15 +125,6 @@
 
         .btn-offline { background: linear-gradient(135deg, #0f172a, #082f49); border: 1px solid var(--primary); color: #fff; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2);}
         .btn-doc { background: linear-gradient(135deg, #1e1b4b, #312e81); border: 1px solid var(--secondary); color: #fff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);}
-
-        /* TELEGRAM CSS ROTATION HACK FOR FULLSCREEN ONLY */
-        .tg-landscape { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vh !important; height: 100vw !important; transform: rotate(90deg) translateY(-100%); transform-origin: top left; z-index: 999999 !important; border-radius: 0 !important; border: none !important; }
-
-        /* DOUBLE TAP RIPPLE EFFECT */
-        .skip-ripple { position: absolute; top: 0; width: 50%; height: 100%; background: rgba(255,255,255,0.15); display: none; align-items: center; justify-content: center; font-size: 2.5rem; color: white; font-weight: bold; z-index: 50; pointer-events: none; }
-        @keyframes fadeRipple { 0% { opacity: 1; transform:scale(0.9);} 100% { opacity: 0; transform:scale(1.1);} }
-        .ripple-left { left: 0; border-top-right-radius: 50%; border-bottom-right-radius: 50%; background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent); }
-        .ripple-right { right: 0; border-top-left-radius: 50%; border-bottom-left-radius: 50%; background: linear-gradient(-90deg, rgba(255,255,255,0.2), transparent); }
     </style>
 </head>
 <body>
@@ -143,7 +165,8 @@
     <!-- 📁 FOLDER SCREEN -->
     <div id="folder-screen" class="screen">
         <h3 id="folder-title" style="text-align:center; font-family:'Orbitron'; color:var(--primary); text-shadow: 0 0 15px var(--primary-glow); margin-bottom: 20px;">LIBRARY</h3>
-        <div id="folder-list" style="flex:1; overflow-y:auto; margin-bottom: 10px;"></div>
+        <!-- Pura space use karega, aur wrap hoga bina clip hue -->
+        <div id="folder-list" style="margin-bottom: 10px;"></div>
         <div class="back-btn-modern" onclick="doorTransition(null, 'back')">⬅️ GO BACK</div>
     </div>
 
@@ -151,17 +174,30 @@
     <div id="video-screen" class="screen" style="padding: 0; background: #050508;">
         <div class="top-bar-glass">
             <span onclick="closeVideo()" style="font-size: 1.4rem; color: var(--primary); cursor: pointer; margin-right: 15px; padding: 5px;">⬅️</span>
-            <div id="vid-title" style="font-size: 1rem; font-weight: 600; white-space: nowrap; overflow:hidden; text-overflow:ellipsis;">Loading...</div>
+            <div style="font-size: 1.1rem; font-weight: 600; font-family:'Orbitron';">Video Player</div>
         </div>
         
-        <div style="padding: 15px; flex:1; overflow-y:auto;">
+        <!-- Yaha inner scroll hata diya, outer screen se hi scroll hoga -->
+        <div style="padding: 15px; padding-bottom: 40px;">
             <div id="video-container">
                 <video id="player" playsinline controls></video>
-                <div id="ripple-left" class="skip-ripple ripple-left">⏪ 10s</div>
-                <div id="ripple-right" class="skip-ripple ripple-right">10s ⏩</div>
+                <!-- 🔥 Custom Single-Tap Overlay for 10s Skip -->
+                <div id="vid-overlay" class="vid-overlay" onclick="toggleOverlay(event)">
+                    <div class="overlay-btn" onclick="skip(event, -10)">⏪</div>
+                    <div class="overlay-btn btn-play-center" id="overlay-play" onclick="togglePlay(event)">⏸</div>
+                    <div class="overlay-btn" onclick="skip(event, 10)">⏩</div>
+                </div>
             </div>
 
-            <!-- NAYA PREMIUM ACTION BUTTONS (GRID LAYOUT) -->
+            <!-- 🔥 Now Playing Box -->
+            <div class="now-playing-box">
+                <div class="np-badge">🔴 NOW PLAYING</div>
+                <div id="np-title" class="np-title">Loading Lecture Title...</div>
+            </div>
+
+            <!-- 🔥 Study Materials & Attachments -->
+            <div class="section-heading">📂 Attachments & Materials</div>
+            
             <div class="action-buttons-grid">
                 <div id="offline-btn" class="premium-btn btn-offline action-btn-full" onclick="sendToChat('video')">
                     <span style="font-size: 1.3rem;">📥</span> Save Video Offline
@@ -192,7 +228,7 @@
     </div>
 
     <script>
-        // 🔒 CORE LOGIC (SAFE & UNTOUCHED)
+        // 🔒 CORE LOGIC (SAFE)
         const tg = window.Telegram.WebApp;
         tg.expand(); tg.setHeaderColor('#09090e');
         const user = tg.initDataUnsafe.user || {id: 8718760365, first_name: "Student"};
@@ -203,69 +239,42 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             player = new Plyr('#player', {
-                controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen'],
+                controls: ['progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'fullscreen'],
                 settings: ['speed'], speed: { selected: 1, options: [0.5, 1, 1.25, 1.5, 2] },
-                doubleClick: { toggle: false } 
+                doubleClick: { toggle: false } // Double click full block
             });
 
-            const vidWrapper = document.querySelector('.plyr__video-wrapper');
+            // 🛑 Block ALL Double click bugs on player completely
+            document.querySelector('.plyr__video-wrapper').addEventListener('dblclick', (e) => {
+                e.preventDefault(); e.stopPropagation();
+            });
+
+            // 🔥 Overlay Sync with Plyr
+            let overlay = document.getElementById('vid-overlay');
+            let playBtn = document.getElementById('overlay-play');
             
-            // 🛑 DEFAULT DOUBLE CLICK COMPLETELY BLOCKED 
-            vidWrapper.addEventListener('dblclick', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            });
-
-            // ⚡ CUSTOM ROBUST 10s SKIP (Fix for rotation & mobile touch)
-            let lastTapTime = 0;
-            vidWrapper.addEventListener('pointerdown', function (e) {
-                if(e.target.closest('.plyr__controls') || e.target.closest('.plyr__control')) return; 
-                
-                let currentTime = new Date().getTime();
-                let tapGap = currentTime - lastTapTime;
-                
-                if (tapGap < 300 && tapGap > 0) {
-                    e.preventDefault(); 
-                    e.stopPropagation(); 
-                    
-                    let rect = this.getBoundingClientRect();
-                    let clickX = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
-                    
-                    if (clickX > rect.width / 2) {
-                        player.forward(10);
-                        triggerRipple('ripple-right');
-                    } else {
-                        player.rewind(10);
-                        triggerRipple('ripple-left');
-                    }
-                    lastTapTime = 0; 
-                    return false;
-                }
-                lastTapTime = currentTime;
-            }); 
-
-            // Helper for 10s Skip Animation
-            function triggerRipple(id) {
-                let r = document.getElementById(id);
-                r.style.display = 'flex'; r.style.animation = 'none'; void r.offsetWidth; // trigger reflow
-                r.style.animation = 'fadeRipple 0.5s linear forwards';
-                setTimeout(() => { r.style.display = 'none'; }, 500);
-                try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
-            }
-
-            // TELEGRAM CSS ROTATION HACK (Ab strictly manual fullscreen btn se chalega)
-            player.on('enterfullscreen', () => {
-                let vc = document.getElementById('video-container');
-                vc.classList.add('tg-landscape');
-                tg.HapticFeedback.impactOccurred('medium');
-            });
-            player.on('exitfullscreen', () => {
-                let vc = document.getElementById('video-container');
-                vc.classList.remove('tg-landscape');
-            });
+            player.on('controlsshown', () => { overlay.classList.add('show'); });
+            player.on('controlshidden', () => { overlay.classList.remove('show'); });
+            player.on('play', () => { playBtn.innerText = '⏸'; });
+            player.on('pause', () => { playBtn.innerText = '▶️'; });
         });
 
-        // 🔄 API CALLS (SAFE)
+        // 🔥 Overlay button functions
+        function skip(e, sec) { 
+            e.stopPropagation(); 
+            if(sec > 0) player.forward(sec); else player.rewind(Math.abs(sec));
+            try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+        }
+        function togglePlay(e) { 
+            e.stopPropagation(); 
+            player.togglePlay(); 
+            try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+        }
+        function toggleOverlay(e) {
+            if(e.target.id === 'vid-overlay') { player.toggleControls(); }
+        }
+
+        // 🔄 API CALLS
         fetch('/api/get_data').then(r=>r.json()).then(data=>{ fullData = data; });
 
         function showToast(msg) {
@@ -304,10 +313,11 @@
                 ref.data.forEach(vid => {
                     let d = document.createElement('div'); d.className = 'lecture-item';
                     d.innerHTML = `
-                        <div style="display:flex; align-items:center;">
+                        <div style="display:flex; align-items:center; width:90%;">
                             <div class="play-icon-wrapper">▶️</div>
-                            <div>
-                                <div style="font-weight:600; font-size:0.95rem; color:#fff;">${vid.title}</div>
+                            <div style="width:100%;">
+                                <!-- 🔥 Word-wrap apply kiya taaki long title full dikhe bina cut huye -->
+                                <div style="font-weight:600; font-size:0.95rem; color:#fff; word-break: break-word; line-height: 1.3;">${vid.title}</div>
                                 <div style="font-size:0.7rem; color:var(--primary); margin-top:4px; font-weight:500; letter-spacing:0.5px;">🎥 VIDEO LECTURE</div>
                             </div>
                         </div>
@@ -319,7 +329,7 @@
                 Object.keys(ref).forEach(k => {
                     if (k === 'mode' || k === 'data') return;
                     let d = document.createElement('div'); d.className = 'glass-box';
-                    d.innerHTML = `<span style="font-size:1.6rem; margin-right:15px; text-shadow: 0 0 10px var(--primary-glow);">📁</span> <span style="font-weight:600; font-size:1.05rem;">${k}</span>`;
+                    d.innerHTML = `<span style="font-size:1.6rem; margin-right:15px; text-shadow: 0 0 10px var(--primary-glow);">📁</span> <span style="font-weight:600; font-size:1.05rem; word-break: break-word;">${k}</span>`;
                     d.onclick = () => doorTransition([...path, k]);
                     
                     if(String(user.id) === "8718760365") {
@@ -341,8 +351,10 @@
 
         function playVideo(vidInfo) {
             currentVid = vidInfo;
-            document.querySelectorAll('.screen').forEach(s => s.style.display='none'); document.getElementById('video-screen').style.display = 'flex';
-            document.getElementById('vid-title').innerText = vidInfo.title;
+            document.querySelectorAll('.screen').forEach(s => s.style.display='none'); 
+            document.getElementById('video-screen').style.display = 'flex';
+            
+            document.getElementById('np-title').innerText = vidInfo.title;
             
             document.getElementById('pdf-btn').style.display = (vidInfo.pdf && vidInfo.pdf !== "#") ? 'flex' : 'none';
             document.getElementById('dpp-btn').style.display = (vidInfo.dpp && vidInfo.dpp !== "#") ? 'flex' : 'none';
