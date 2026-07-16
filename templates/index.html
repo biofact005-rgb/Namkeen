@@ -237,11 +237,29 @@
     </div>
 
     <script>
-        // 🔒 CORE LOGIC 
+        
         // 🔒 CORE LOGIC 
         const tg = window.Telegram.WebApp;
         tg.expand(); 
         
+        // 🔥 TABLET & DESKTOP TRUE FULLSCREEN FIX
+        try {
+            if (tg.requestFullscreen) {
+                tg.requestFullscreen();
+            }
+        } catch(e) {}
+        
+        // 🛑 SWIPE TO CLOSE LOCK & CONFIRMATION FIX
+        try {
+            if (tg.disableVerticalSwipes) {
+                tg.disableVerticalSwipes(); // 👈 Ye swipe karke band hone se rokega
+            }
+            if (tg.enableClosingConfirmation) {
+                tg.enableClosingConfirmation(); // 👈 (Bonus) Galti se X dab gaya toh warning dega ki "Are you sure?"
+            }
+        } catch(e) {}
+        
+        tg.setHeaderColor('#09090e');
         // 🔥 TABLET & DESKTOP TRUE FULLSCREEN FIX
         try {
             if (tg.requestFullscreen) {
