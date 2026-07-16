@@ -232,8 +232,18 @@
 
     <script>
         // 🔒 CORE LOGIC 
+        // 🔒 CORE LOGIC 
         const tg = window.Telegram.WebApp;
-        tg.expand(); tg.setHeaderColor('#09090e');
+        tg.expand(); 
+        
+        // 🔥 TABLET & DESKTOP TRUE FULLSCREEN FIX
+        try {
+            if (tg.requestFullscreen) {
+                tg.requestFullscreen();
+            }
+        } catch(e) {}
+        
+        tg.setHeaderColor('#09090e');
         const user = tg.initDataUnsafe.user || {id: 8718760365, first_name: "Student"};
         if(document.getElementById('u-name')) document.getElementById('u-name').innerText = user.first_name;
         if(user.photo_url && document.getElementById('u-pic')) document.getElementById('u-pic').src = user.photo_url;
