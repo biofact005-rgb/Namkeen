@@ -100,12 +100,18 @@
         }
         
         /* 🔥 SINGLE TAP CUSTOM OVERLAY */
-        .vid-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center; gap: 20px;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; z-index: 10;
-        }
-        .vid-overlay.show { opacity: 1; }
+        /* 🔥 PREVENT BROWSER ZOOM & OVERLAY FIX */
+.plyr { touch-action: manipulation !important; }
+
+.vid-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center; gap: 20px;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; z-index: 10;
+}
+.vid-overlay.show { 
+    opacity: 1; 
+    pointer-events: auto; /* Jab dikh raha ho, tab screen touch ko pakadne ke liye */ 
+}
         
         .overlay-btn {
             width: 55px; height: 55px; border-radius: 50%;
@@ -258,9 +264,11 @@
             });
 
             // 🛑 Block ALL Double click bugs
-            document.querySelector('.plyr__video-wrapper').addEventListener('dblclick', (e) => {
-                e.preventDefault(); e.stopPropagation();
-            });
+            // 🛑 STRICT DOUBLE CLICK BLOCKER (Replace this part)
+document.querySelector('.plyr').addEventListener('dblclick', (e) => {
+    e.preventDefault(); 
+    e.stopPropagation();
+}, true); // 'true' lagane se event turant ruk jayega, player rotate nahi hoga
 
             // 🔥 ZOOM BUTTON PE ROTATION 
             player.on('enterfullscreen', () => {
@@ -277,6 +285,13 @@
             const plyrContainer = document.querySelector('.plyr');
             const overlay = document.getElementById('vid-overlay');
             plyrContainer.appendChild(overlay);
+
+            // 🔥 Overlay space me wapas click karne pe controls gayab karne ka logic (Naya add karna hai)
+overlay.addEventListener('click', (e) => {
+    if(e.target === overlay) { 
+        player.toggleControls(false); // Second click pe hide
+    }
+});
 
             let iconPlay = document.getElementById('icon-play');
             let iconPause = document.getElementById('icon-pause');
