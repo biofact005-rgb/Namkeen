@@ -317,10 +317,8 @@
             });
         }
 
+        // 🔥 ARTPLAYER INITIALIZATION & MAGIC LOG
         // 🔥 ARTPLAYER INITIALIZATION & MAGIC LOGIC
-
-
-// 🔥 ARTPLAYER INITIALIZATION & MAGIC LOGIC
         function playVideo(vidInfo) {
             currentVid = vidInfo;
             document.querySelectorAll('.screen').forEach(s => s.style.display='none'); 
@@ -392,7 +390,11 @@
                         setTimeout(() => art.autoSize(), 150); // Wapas normal karega
                     }
                 });
-                
+            } // ⚠️ YAHAN AAPNE BRACKET MISS KIYA THA!
+            
+            art.play(); // ⚠️ YE BHI MISS HO GAYA THA!
+        }
+
         // Helper: Skip Animation Ripple
         function showRipple(side, text) {
             let ripple = document.createElement('div');
@@ -407,7 +409,6 @@
             try { tg.HapticFeedback.impactOccurred('light'); } catch(err){}
         }
 
-        
         function sendToChat(type) {
             let urlToSend = type === 'video' ? currentVid.url : (type === 'pdf' ? currentVid.pdf : currentVid.dpp);
             showToast("⏳ Sending to Bot Chat...");
