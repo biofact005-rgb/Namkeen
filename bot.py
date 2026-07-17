@@ -77,20 +77,131 @@ def start(m):
     caption = f"🚀 <b>Welcome to Namkeen Batch!</b>\n\nEkdum HD aur bina buffering ke lectures dekho!"
     bot.send_message(m.chat.id, caption, reply_markup=markup, parse_mode="HTML")
 
-@bot.message_handler(content_types=['document'])
-def handle_docs(message):
-    if str(message.from_user.id) != str(ADMIN_ID): return 
-    try:
-        file_info = bot.get_file(message.document.file_id)
-        downloaded = bot.download_file(file_info.file_path)
-        meta, parsed_vids = parse_video_txt(downloaded.decode('utf-8'))
-        if not meta: return bot.reply_to(message, parsed_vids) 
+import re
+
+admin_states = {} # 🧠 Bot ka dimag jo path aur replies yaad rakhega
+
+# 1️⃣ PATH SET KARNE WALA COMMAND
+@bot.message_handler(commands=['setpath'])
+def set_path(m):
+    if str(m.from_user.id) != str(ADMIN_ID): return
+    path_str = m.text.replace('/setpath', '').strip()
+    if not path_str:
+        return bot.reply_to(m, "⚠️ Format: `/setpath Folder 1/Folder 2`", parse_mode="Markdown")
+    
+    path_list = [p.strip() for p in path_str.split('/') if p.strip()]
+    admin_states.setdefault(m.from_user.id, {})['path'] = path_list
+    bot.reply_to(m, f"📂 **Path Ready:** `{' ➔ '.join(path_list)}`\n\n🔥 Ab ek sath jitni marzi videos forward maaro!", parse_mode="Markdown")
+
+# 2️⃣ NAAM BADALNE WALA COMMAND
+@bot.message_handler(commands=['rename'])
+def rename_vid(m):
+    if str(m.from_user.id) != str(ADMIN_ID): return
+    if not m.reply_to_message: return bot.reply_to(m, "⚠️ Naye naam ke liye pehle video ke 'Saved' message par reply karo!")
+    
+    new_title = m.text.replace('/rename', '').strip()
+    if not new_title: return bot.reply_to(m, "⚠️ Naam toh likho! `/rename L1: New Title`")
+    
+    reply_map = admin_states.get(m.from_user.id, {}).get('reply_map', {})
+    target_msg_id = m.reply_to_message.message_id
+    
+    if target_msg_id in reply_map:
+        vid_info = reply_map[target_msg_id]
+        for v in db_data.get('videos', []):
+            if v.get('path') == vid_info['path']:
+                for vid in v['data']:
+                    if vid['url'] == vid_info['vid_url']:
+                        vid['title'] = new_title
+                        save_db(db_data)
+                        return bot.reply_to(m, f"✅ **Naam badal gaya:**\n`{new_title}`", parse_mode="Markdown")
+        bot.reply_to(m, "❌ Video database me nahi mili.")
+
+# 3️⃣ ASLI JAADU (FILE, VIDEO & TXT HANDLER)
+@bot.message_handler(content_types=['video', 'document', 'audio'])
+def handle_media(m):
+    if str(m.from_user.id) != str(ADMIN_ID): return
+    
+    # 📝 FALLBACK: Agar TXT File upload ki toh purana system chalega
+    if m.content_type == 'document' and m.document.file_name.endswith('.txt'):
+        try:
+            file_info = bot.get_file(m.document.file_id)
+            downloaded = bot.download_file(file_info.file_path)
+            meta, parsed_vids = parse_video_txt(downloaded.decode('utf-8'))
+            if not meta: return bot.reply_to(m, parsed_vids) 
+            
+            db_data['videos'] = [v for v in db_data.get('videos', []) if v.get('path') != meta['path']]
+            db_data['videos'].append({"path": meta['path'], "mode": meta['mode'], "data": parsed_vids})
+            save_db(db_data)
+            return bot.reply_to(m, f"✅ **TXT Upload Success!**\n📂 Path: {' ➔ '.join(meta['path'])}\n🎥 Lectures: {len(parsed_vids)}", parse_mode="Markdown")
+        except Exception as e: return bot.reply_to(m, f"❌ TXT Error: {e}")
+
+    # 📄 IF REPLYING WITH PDF (Notes ya DPP add karna)
+    reply_map = admin_states.get(m.from_user.id, {}).get('reply_map', {})
+    if m.reply_to_message and m.reply_to_message.message_id in reply_map:
+        vid_info = reply_map[m.reply_to_message.message_id]
+        copied_pdf = bot.copy_message(BIN_CHANNEL, m.chat.id, m.message_id)
+        pdf_url = f"https://bot.local/{copied_pdf.message_id}/file.pdf"
         
-        db_data['videos'] = [v for v in db_data.get('videos', []) if v.get('path') != meta['path']]
-        db_data['videos'].append({"path": meta['path'], "mode": meta['mode'], "data": parsed_vids})
+        is_dpp = m.caption and '/dpp' in m.caption.lower()
+        
+        for v in db_data.get('videos', []):
+            if v.get('path') == vid_info['path']:
+                for vid in v['data']:
+                    if vid['url'] == vid_info['vid_url']:
+                        if is_dpp:
+                            vid['dpp'] = pdf_url
+                            msg_type = "📝 DPP"
+                        else:
+                            vid['pdf'] = pdf_url
+                            msg_type = "📄 Class Notes"
+                        save_db(db_data)
+                        return bot.reply_to(m, f"✅ **{msg_type} Attached Successfully!**", parse_mode="Markdown")
+
+    # 🎥 IF UPLOADING/FORWARDING NEW VIDEO
+    target_path = admin_states.get(m.from_user.id, {}).get('path')
+    if not target_path:
+        return bot.reply_to(m, "❌ **Pehle path set karo!**\nLikkho: `/setpath Folder Name/Subject`", parse_mode="Markdown")
+        
+    try:
+        # Seedha Bin me Copy
+        copied_vid = bot.copy_message(BIN_CHANNEL, m.chat.id, m.message_id)
+        vid_url = f"https://bot.local/{copied_vid.message_id}/video.mp4"
+        
+        # Smart Caption Cleaner 🧹
+        raw_caption = m.caption if m.caption else (m.document.file_name if m.content_type == 'document' else "Untitled Video")
+        lines = [line.strip() for line in raw_caption.split('\n') if line.strip()]
+        title = lines[0] if lines else "Untitled Video"
+        
+        # Kachra saaf (remove @usernames and links)
+        title = re.sub(r'@\w+', '', title)
+        title = re.sub(r'http\S+|www.\S+|t\.me/\S+', '', title)
+        title = title.replace('.mp4', '').replace('.mkv', '').strip()
+        if not title: title = "Untitled Lecture"
+        
+        # DB me save karo
+        doc_found = False
+        if 'videos' not in db_data: db_data['videos'] = []
+        
+        for v in db_data['videos']:
+            if v.get('path') == target_path:
+                v.setdefault('data', []).append({"title": title, "url": vid_url, "pdf": "#", "dpp": "#"})
+                doc_found = True
+                break
+        
+        if not doc_found:
+            db_data['videos'].append({"path": target_path, "mode": "video", "data": [{"title": title, "url": vid_url, "pdf": "#", "dpp": "#"}]})
+            
         save_db(db_data)
-        bot.reply_to(message, f"✅ <b>Upload Success!</b>\n📂 Path: {' ➔ '.join(meta['path'])}\n🎥 Lectures: {len(parsed_vids)}", parse_mode="HTML")
-    except Exception as e: bot.reply_to(message, f"❌ Error: {e}")
+        
+        # Reply with Instructions (Isi reply ke zariye Notes judenge)
+        reply_msg = bot.reply_to(m, f"✅ **Saved:** `{title}`\n\n_1. Notes ke liye is msg par PDF reply karo.\n2. DPP ke liye is msg par PDF + caption me /dpp likh kar reply karo.\n3. Naam badalne ke liye reply me /rename Naya Naam likho._", parse_mode="Markdown")
+        
+        # Agli baar reply pe pehchanne ke liye memory me save
+        admin_states.setdefault(m.from_user.id, {})['reply_map'] = admin_states.get(m.from_user.id, {}).get('reply_map', {})
+        admin_states[m.from_user.id]['reply_map'][reply_msg.message_id] = {"path": target_path, "vid_url": vid_url}
+        
+    except Exception as e:
+        bot.reply_to(m, f"❌ Error adding video: {e}")
 
 # ==========================================
 # 🌐 API ROUTES (FLASK)
