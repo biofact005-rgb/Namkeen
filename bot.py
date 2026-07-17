@@ -116,6 +116,45 @@ def rename_vid(m):
                         return bot.reply_to(m, f"✅ **Naam badal gaya:**\n`{new_title}`", parse_mode="Markdown")
         bot.reply_to(m, "❌ Video database me nahi mili.")
 
+import re
+
+admin_states = {} # 🧠 Bot ka dimag jo path aur replies yaad rakhega
+
+# 1️⃣ PATH SET KARNE WALA COMMAND
+@bot.message_handler(commands=['setpath'])
+def set_path(m):
+    if str(m.from_user.id) != str(ADMIN_ID): return
+    path_str = m.text.replace('/setpath', '').strip()
+    if not path_str:
+        return bot.reply_to(m, "⚠️ Format: `/setpath Folder 1/Folder 2`", parse_mode="Markdown")
+    
+    path_list = [p.strip() for p in path_str.split('/') if p.strip()]
+    admin_states.setdefault(m.from_user.id, {})['path'] = path_list
+    bot.reply_to(m, f"📂 **Path Ready:** `{' ➔ '.join(path_list)}`\n\n🔥 Ab ek sath jitni marzi videos forward maaro!", parse_mode="Markdown")
+
+# 2️⃣ NAAM BADALNE WALA COMMAND
+@bot.message_handler(commands=['rename'])
+def rename_vid(m):
+    if str(m.from_user.id) != str(ADMIN_ID): return
+    if not m.reply_to_message: return bot.reply_to(m, "⚠️ Naye naam ke liye pehle video ke 'Saved' message par reply karo!")
+    
+    new_title = m.text.replace('/rename', '').strip()
+    if not new_title: return bot.reply_to(m, "⚠️ Naam toh likho! `/rename L1: New Title`")
+    
+    reply_map = admin_states.get(m.from_user.id, {}).get('reply_map', {})
+    target_msg_id = m.reply_to_message.message_id
+    
+    if target_msg_id in reply_map:
+        vid_info = reply_map[target_msg_id]
+        for v in db_data.get('videos', []):
+            if v.get('path') == vid_info['path']:
+                for vid in v['data']:
+                    if vid['url'] == vid_info['vid_url']:
+                        vid['title'] = new_title
+                        save_db(db_data)
+                        return bot.reply_to(m, f"✅ **Naam badal gaya:**\n`{new_title}`", parse_mode="Markdown")
+        bot.reply_to(m, "❌ Video database me nahi mili.")
+
 # 3️⃣ ASLI JAADU (FILE, VIDEO & TXT HANDLER)
 @bot.message_handler(content_types=['video', 'document', 'audio'])
 def handle_media(m):
@@ -140,7 +179,9 @@ def handle_media(m):
     if m.reply_to_message and m.reply_to_message.message_id in reply_map:
         vid_info = reply_map[m.reply_to_message.message_id]
         copied_pdf = bot.copy_message(BIN_CHANNEL, m.chat.id, m.message_id)
-        pdf_url = f"https://bot.local/{copied_pdf.message_id}/file.pdf"
+        
+        # 🔥 YAHAN HUA ASLI DOMAIN ADD! 🔥
+        pdf_url = f"https://filestreambot-ou3v.onrender.com:10000/{copied_pdf.message_id}/file.pdf"
         
         is_dpp = m.caption and '/dpp' in m.caption.lower()
         
@@ -165,7 +206,9 @@ def handle_media(m):
     try:
         # Seedha Bin me Copy
         copied_vid = bot.copy_message(BIN_CHANNEL, m.chat.id, m.message_id)
-        vid_url = f"https://bot.local/{copied_vid.message_id}/video.mp4"
+        
+        # 🔥 YAHAN BHI ASLI DOMAIN ADD HUA! 🔥
+        vid_url = f"https://filestreambot-ou3v.onrender.com:10000/{copied_vid.message_id}/video.mp4"
         
         # Smart Caption Cleaner 🧹
         raw_caption = m.caption if m.caption else (m.document.file_name if m.content_type == 'document' else "Untitled Video")
